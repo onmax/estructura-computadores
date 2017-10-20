@@ -18,7 +18,7 @@ DA3:  data    16, -1, 0x4, 0x0C, -255, 255, 0x0, 0 /fin/;
 ;
 ; Programa Principal (PPAL) situado en la direcci�n 1000
 ;
-              org     100.0
+              org     1000.0
 PPAL:         or      r10, r0, low(DA1)  ; r10 contiene la direcci�n reflejada en DA1
                                          ; observese que cabe en 16 bits
               ld      r20, r10, 0        ; palabra almacenada en DA1

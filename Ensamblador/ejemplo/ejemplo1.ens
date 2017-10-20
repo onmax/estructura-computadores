@@ -1,10 +1,5 @@
-; Materia:    Estructura de Computadores.
-; Archivo:    88k_Win_ejemplos.zip
-; ----------------------------------------------------------------------
-;
-; Ejemplo1:  Programa mínimo. Suma de dos registros.
-;
-
-      add      r2, r2, r3  ; r2 <-- r2 + r3
-      stop                 ; 'instrucción' del emulador
+or r3, r0, r0
+add r3, r3, -4      
+subu	  r2, r3, 5  ; r2 <-- r2 + r3
+stop                 ; 'instrucción' del emulador
 

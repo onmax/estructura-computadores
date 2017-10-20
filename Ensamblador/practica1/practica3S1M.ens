@@ -1,0 +1,304 @@
+; Titulación: Grado en Informática. Plan 2009.
+; Materia:    Estructura de Computadores.
+; Archivo:    practica3S1M.ens (para corregir y completar)
+; ----------------------------------------------------------------------
+;
+; Fichero para entregar, una vez corregido/completado, junto con el
+; fichero de autores.
+;
+; ----------------------------------------------------------------------
+; A continuación se especifican 7 subrutinas, de las que las dos primeras
+; están ya implementadas, pero contienen errores que se han de corregir.
+; Es necesario respetar los nombres de las subrutinas, tal como están
+; especificados: CUENTA, MAXIMO, MCD, MCM, AJUSTE, DIAG, SUMACOL.
+;
+; Se incluye también un programa principal para llamar a cada subrutina,
+; así como algunas macros habituales: LEA, DBNZ, PUSH y POP, aunque
+; podría requerirse su modificación para lograr un funcionamiento
+; correcto de los programas.
+;
+; ---------------------------------------------> Macros
+;
+LEA:      MACRO  (reg, ETIQ)
+          or     reg, r0,  low(ETIQ)
+          or.u   reg, reg, high(ETIQ)
+          ENDMACRO
+
+DBNZ:     MACRO  (reg, ETIQ)
+          sub    reg, reg, 1
+          cmp    r3, reg, r0
+          bb0    eq, r3, ETIQ
+          ENDMACRO
+
+PUSH:     MACRO  (reg)
+          subu   r30, r30, 4
+          st     reg, r30, r0
+          ENDMACRO
+
+POP:      MACRO  (reg)
+          ld     reg, r30, r0
+          addu   r30, r30, 4
+          ENDMACRO
+
+;
+; ---------------------------------------------> Datos para pruebas
+;
+          org    1000
+
+; Datos de prueba (para subrutina "CUENTA").
+DATOS:    data    "caracteres arbitrarios\0"
+
+; Datos de prueba (para subrutina "MAXIMO").
+VECTOR:  data  8
+         data  0x04C0B007, 0x1000CF66
+; Elementos: 07 B0 C0 04 66 CF 00 10
+
+; Datos de prueba (para subrutina "MCD").
+; --> No necesarios (veáse el prog. principal).
+
+; Datos de prueba (para subrutina "MCM").
+; --> No necesarios (veáse el prog. principal).
+
+; Datos de prueba (para subrutina "AJUSTE").
+; --> No necesarios (veáse el prog. principal).
+
+; Datos de prueba (para subrutina "DIAG").
+MATRIZA: data  6
+         data  1, 2, 3, 4, 5, 6
+         data  2, 4, 6, 8, 10, 12
+         data  3, 4, 5, 6, 7, 8
+         data  1, 2, 3, 4, 5, 9
+         data  2, 3, 4, 5, 6, 1
+         data  4, 5, 6, 1, 2, 2
+
+; Datos de prueba (para subrutina "SUMACOL").
+MATRIZB: data  3, 4
+         data  1, 2, 3, 4
+         data  5, 3, 5, 3
+         data  1, 3, 5, 7
+
+; Reserva de espacio para almacenar el resultado de SUMACOL.
+RSUMCOL: res   40
+;
+; ---------------------------------------------> Programas llamantes
+;
+          org    2000
+
+; Programa Principal 1 (prueba de subrutina "CUENTA")
+; El resultado quedará finalmente en r29.
+PPAL1:    LEA    (r12, DATOS)   ; Dirección de comienzo de la cadena
+	  bsr    CUENTA
+	  stop
+
+; Programa Principal 2 (prueba de subrutina "MAXIMO")
+; El resultado quedará finalmente en r29.
+
+PPAL2:    LEA    (r30, 60000)   ; inicialización del puntero de pila
+          LEA    (r15, VECTOR)  ; Dirección de comienzo del vector
+	  bsr    MAXIMO
+	  stop
+
+; Programa Principal 3 (prueba de subrutina "MCD")
+; Paso de parámetros de entrada en la pila: MCD(num1, num2)
+; El resultado quedará finalmente en r29.
+
+PPAL3:    LEA    (r30, 60000)  ; inicialización del puntero de pila
+          or     r2, r0, 10    ; Prueba con los valores 10 y 35
+          or     r3, r0, 35    ; Prueba con los valores 10 y 35
+	  PUSH	 (r3)
+	  PUSH	 (r2)
+	  bsr    MCD
+	  addu	 r30, r30, 8
+	  stop
+
+; Programa Principal 4 (prueba de subrutina "MCM")
+; El resultado quedará finalmente en r29.
+
+PPAL4:    LEA    (r30, 60000)  ; inicialización del puntero de pila
+          or     r2, r0, 10    ; Prueba con los valores 10 y 35
+          or     r3, r0, 35    ; Prueba con los valores 10 y 35
+	  PUSH	 (r3)
+	  PUSH	 (r2)
+	  bsr    MCM
+	  addu	 r30, r30, 8
+	  stop
+
+; Programa Principal 5 (prueba de subrutina "AJUSTE")
+; El resultado quedará finalmente en r29.
+
+PPAL5:    LEA    (r30, 60000)  ; inicialización del puntero de pila
+          or     r12, r0, 7    ; Prueba de ajuste con el valor "7"
+	  bsr    AJUSTE
+	  stop
+
+; Programa Principal 6 (prueba de subrutina "DIAG")
+; El resultado quedará finalmente en r29.
+
+PPAL6:    LEA    (r30, 60000)     ; inicialización del puntero de pila
+          LEA    (r10, MATRIZA)   ; Dirección de la matriz
+	  bsr    DIAG
+	  stop
+
+; Programa Principal 7 (prueba de subrutina "SUMACOL")
+; El resultado quedará a partir de la dirección que indica r11.
+
+PPAL7:    LEA    (r30, 60000)     ; inicialización del puntero de pila
+          LEA    (r10, MATRIZB)   ; Dirección de comienzo de la cadena
+          LEA    (r11, RSUMCOL)   ; Dirección del resultado
+	  bsr    SUMACOL
+	  stop
+
+;
+; ---------------------------------------------> Subrutinas
+;
+; Subrutina CUENTA. Paso de parámetros en registros (r12)
+;             Objetivo: contar el número de caracteres de una cadena dada.
+;             Parámetros de entrada:
+;               r12 contiene la dirección de comienzo de la cadena. Se
+;                   debe interpretar que la cadena finaliza con el carácter
+;                   NUL ('\0').
+;             Resultados:
+;               r29 contendrá el número de caracteres que forman parte de
+;                   la cadena, excluyendo el terminador ('\0').
+;             La subrutina proporcionada contiene DOS errores que se han de
+;             localizar y corregir, de modo que el resultado obtenido en r29
+;             sea el esperado.
+
+CUENTA:	  xor    r10, r10, r10  ; Contador de caracteres
+BUC:      ld.bu  r3, r12, r10   ; lectura del caracter (MEM[r12+r10])
+          addu   r10, r10, 1     ; se incrementa el contador
+          cmp    r2, r3, r0      ; comprobación de final
+          bb1    ne, r2, BUC    ; si no es cero, vuelve al bucle
+FIN:      or     r29, r10, r10  ; en caso contrario, FIN.
+          subu   r29, r29, 1
+          jmp    (r1)
+
+; Subrutina MAXIMO. Paso de parámetros en registros (r15)
+; El puntero de pila debe estar inicializado en el programa llamante.
+;
+;             Objetivo: Se trata de determinar el valor máximo de los
+;             elementos del vector de BYTES SIN SIGNO que comienza en la
+;             dirección indicada en r15. Este vector está formado por un
+;             entero que especifica el número de elementos, seguido de
+;             dichos elementos (véase la definición del dato VECTOR).
+;             Parámetros de entrada:
+;               r15 contiene la dirección de comienzo del vector.
+;             Resultados:
+;               r29 contendrá el máximo de los elementos del vector.
+;             La subrutina proporcionada contiene errores que se han de
+;             localizar y corregir, de modo que el resultado obtenido en r29
+;             sea el esperado.
+;
+MAXIMO:  PUSH    (r1)           ;Salvaguarda el registro r1 (¿r30 inicializado?)
+         ld      r4,r15,0       ;r3 es el contador con el número de elementos 
+         xor     r29,r29,r29    ;r29 almacenará el valor máximo
+BUCLE:   addu    r15,r15,1
+         ld.bu      r6,r15,r0
+         cmp     r2,r6,r29      ;Si el elemento no es mayor se deja r29
+         bb1     ls,r2,SALTO    ;igual y en caso contrario se cambia
+         or      r29,r6,r6
+SALTO:   DBNZ    (r4,BUCLE)     ;y se decrementa el contador
+         POP     (r1)
+         jmp     (r1)
+
+
+; Subrutina MCD. Paso de parámetros por la pila
+;           Objetivo: Dados dos valores numéricos positivos, recibidos
+;	    como parámetros en la pila, se trata de determinar el máximo
+;	    común divisor (MCD) de ambos, que se devolverá en r29.
+;	    El método de Euclides para obtener el MCD de dos números es
+;    	    muy sencillo y se implementa fácilmente en lenguaje
+;	    ensamblador. Consiste en realizar un proceso iterativo en el
+;	    que, partiendo de los dos números iniciales, se sustituye en
+;           cada iteración el mayor de ambos por la diferencia entre el
+;	    mayor y el menor. El bucle finaliza cuando ambos valores son
+;	    iguales.
+;           Ejemplos:
+;             - MCD(10, 35) = 5
+;             - MCD(10, 36) = 2
+;             - MCD(10, 37) = 1
+;           Parámetros de entrada:
+;               Dos valores numéricos positivos que pasan por la pila
+;           Resultados:
+;               r29 devolverá el resultado.
+MCD:	PUSH	(r1)
+	ld	r10, r30, 4
+	ld	r11, r30, 8
+
+	POP	(r1)
+	jmp	(r1)
+
+; Subrutina MCM. Paso de parámetros por la pila
+;           Objetivo: Dados dos valores numéricos positivos, recibidos
+;	    como parámetros en la pila, se trata de determinar el mínimo
+;	    común múltiplo (MCM) de ambos, que se devolverá en r29.
+;	    El método más sencillo una vez que se conoce el MCD de ambos
+;	    números consiste simplemente en calcular el producto de ambos
+;	    números y dividirlo entre su MCD.
+;           Ejemplos:
+;             - MCM(10, 35) = 70
+;             - MCM(10, 36) = 180
+;             - MCM(10, 37) = 370
+;           Parámetros de entrada:
+;               Dos valores numéricos positivos que pasan por la pila
+;           Resultados:
+;               r29 devolverá el resultado.
+MCM:	PUSH	(r1)
+	ld	r10, r30, 4
+	ld	r11, r30, 8
+
+	POP	(r1)
+	jmp	(r1)
+
+; Subrutina AJUSTE. Paso de parámetros en registros (r12)
+;             Objetivo: Dado un valor numérico positivo, recibido como
+;             parámetro en r12, se trata de determinar el múliplo de 4
+;             más cercano por exceso a dicho valor. En caso de error, 
+;             se devolverá el valor -1 como resultado. Ejemplos:
+;             - Si r12 vale 7, en r29 se debe devolver 8.
+;             - Si r12 vale 20, en r29 se debe devolver 20.
+;             - Si r12 vale -20, en r29 se debe devolver -1.
+;             Parámetros de entrada:
+;               r12 contiene el valor que se ha de ajustar.
+;             Resultados:
+;               r29 devolverá el resultado (valor ajustado por exceso).
+AJUSTE:     PUSH (r1)  ; PUSH y POP no necesarios, 
+
+            POP  (r1)
+            jmp  (r1)
+
+; Subrutina DIAG. Paso de parámetros en registros (r10)
+;             Objetivo: Se trata de determinar la suma de los valores de
+;             la diagonal de una matriz cuadrada especificada por su dirección
+;             de memoria, que estará indicada en r10. Esta matriz está formada
+;             por un entero que especifica su dimensión, seguido de los elementos
+;             de la matriz (enteros) almacenados por filas (véase la definición
+;             del dato MATRIZA).
+;             Parámetros de entrada:
+;               r10 contiene la dirección de comienzo de la matriz.
+;             Resultados:
+;               r29 contendrá la suma de los elementos de la matriz.
+DIAG:      PUSH (r1)  ; PUSH y POP no necesarios, 
+
+           POP  (r1)
+           jmp  (r1)
+
+; Subrutina SUMACOL. Paso de parámetros en registros (r10, r11)
+;             Objetivo: Se trata de determinar la suma de los valores de
+;             todas las columnas de una matriz especificada por su dirección
+;             de memoria, que estará indicada en r10. Esta matriz está formada
+;             por dos enteros que especifican el número de filas y de columnas,
+;             seguidos por los elementos de la matriz (enteros) almacenados por
+;             filas:
+;               NF, NC, A[0,0], A[0,1], ... A[0,NC-1], A[1,0], A[1,1], ...
+;             (véase la definición del dato MATRIZB).
+;             Parámetros de entrada:
+;               r10 contiene la dirección de comienzo de la matriz.
+;             Resultados:
+;               A partir de la dirección de memoria indicada en r11 quedarán
+;               almacenados los valores correspondientes a la suma de cada
+;               columna.
+SUMACOL:   PUSH (r1)  ; PUSH y POP no necesarios, 
+
+           POP  (r1)
+           jmp  (r1)
