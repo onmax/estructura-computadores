@@ -11,6 +11,8 @@ NFiltrados:
     or   r29, r2, r2; r29 <- nF
     jmp  (r1)
 negativo_nFiltrado:
+    org  0
+    data 0
     subu r29, r0, 1; r29 <- (-1)
     jmp  (r1)
 cero:  
