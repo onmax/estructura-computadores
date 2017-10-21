@@ -16,7 +16,6 @@ negativo_nFiltrado:
     subu r29, r0, 1; r29 <- (-1)
     jmp  (r1)
 cero:  
-    st   r0, r29, r0
     jmp  (r1)
     
     
