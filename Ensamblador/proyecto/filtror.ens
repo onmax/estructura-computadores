@@ -5,7 +5,7 @@ LEA:  MACRO (ra, eti)
       
 PUSH: MACRO(ra)
       subu r30, r30, 4
-      st   ra, r30, 0
+      st ra, r30, r0
       ENDMACRO
 
 POP:  MACRO(ra)
@@ -24,8 +24,7 @@ IMG1: data  3,3,0x07050301, 0x080A0C0F, 0x00000011
 IMG2: data 3, 3, 0x07040301, 0x090A0C0F, 0x00000011
 
       org 0
-PPAL: LEA(r30, PILA)
-        
+PPAL: LEA(r30, PILA)  
       ;Prueba para nFiltrados
       or r3, r0, r0
       addu r3, r3, 10; probamos nFiltrados con 10
@@ -58,7 +57,7 @@ PPAL: LEA(r30, PILA)
       PUSH(r2)
       PUSH(r1)
       
-      bsr Compara
+      bsr COMPARA
       
       POP(r1)
       POP(r30)
@@ -67,20 +66,20 @@ PPAL: LEA(r30, PILA)
       
 
 NFiltrados:
+    PUSH (r1)
     or   r29, r0, r0; r29 <- 0
     ld   r2, r30, r0; Cargamos oper
     cmp  r5, r2, r0
     bb1  eq, r5, cero; Si el oper es cero, devolvemos en r29 cero
     ld   r2, r0, r0; Cargamos nF
     cmp  r5, r2, 11
-    bb1  ge, r5, negativo; Si el valor es mayor o igual a 11, devolvemos -1
+    bb1  ge, r5, negativo_nFiltrado; Si el valor es mayor o igual a 11, devolvemos -1
     addu r2, r2, 1; r2 <- r2+1
     st   r2, r0, r0; 0x000000000 == nF <- r2
     or   r29, r2, r2; r29 <- nF
     jmp  (r1)
 negativo_nFiltrado:
-    org  0
-    data 0
+    st r0, r0, r0
     subu r29, r0, 1; r29 <- (-1)
     jmp  (r1)
 cero:  
@@ -89,6 +88,7 @@ cero:
     
     
 COMPARA:
+    PUSH (r1)
     ld    r20, r30, r0; Puntero Imagen1
     ld    r21, r30, 4; Puntero Imagen2
     ld    r2, r20, r0; Número filas
@@ -105,9 +105,9 @@ bucle_compara:
     cmp   r5, r3, r0
     bb1   gt, r5, nPositivo; Si el resultado es positivo vamos a la etiqueta positivo
     sub   r3, r0, r3; Si el resultado es negativo lo convertimos a positivo
-positivo:
+nPositivo:
     addu  r29, r29, r3; Sumamos al total el valor de la diferencia
     subu  r2, r2, 1; Restamos a la dimensión/contador 1
     cmp   r5, r2, r0
     bb1   gt, r5, bucle_compara; Si todavía no ha llegado al final, lo volvemos a ejecutar
-    jmp   (r1)
+    jmp(r1)
