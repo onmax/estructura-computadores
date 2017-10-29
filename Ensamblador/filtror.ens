@@ -2,12 +2,11 @@ LEA:  MACRO (ra, eti)
       or   ra, r0, low(eti)
       or.u ra, ra, high(eti)
       ENDMACRO
-    
+      
 PUSH: MACRO(ra)
       subu r30, r30, 4
       st ra, r30, r0
       ENDMACRO
-      
 POP:  MACRO(ra)
       ld ra, r30, 0
       or r30, r30, 4

@@ -1,0 +1,8 @@
+Exception: STATUS_ACCESS_VIOLATION at eip=6C612073
+eax=FFFFFFFF ebx=2C313272 ecx=000094A4 edx=FFFFFFFF esi=203B3820 edi=6E757041
+ebp=6F6D6174 esp=0062C330 program=C:\Users\Max\Desktop\UPM\3º Semestre\Estructura de computadores\Ensamblador\proyecto\88110.exe, pid 8732, thread main
+cs=0023 ds=002B es=002B fs=0053 gs=002B ss=002B
+Stack trace:
+Frame     Function  Args
+ 124156 [main] 88110 8732 _cygtls::handle_exceptions: Exception: STATUS_ACCESS_VIOLATION
+ 146597 [main] 88110 8732 _cygtls::handle_exceptions: Error while dumping state (probably corrupted stack)

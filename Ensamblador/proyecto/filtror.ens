@@ -2,71 +2,72 @@ LEA:  MACRO (ra, eti)
       or   ra, r0, low(eti)
       or.u ra, ra, high(eti)
       ENDMACRO
-      
+    
 PUSH: MACRO(ra)
       subu r30, r30, 4
       st ra, r30, r0
       ENDMACRO
-
+      
 POP:  MACRO(ra)
       ld ra, r30, 0
       or r30, r30, 4
       ENDMACRO
       
-      
-      org   0xF000
-PILA: data  0
+       org   0x0000 
+NF:     data  0
+;      org   0xF000
+;PILA: data  0
 
-      org   0x1000
-IMG1: data  3,3,0x07050301, 0x080A0C0F, 0x00000011
+;      org   0x1000
+;IMG1: data  3,3,0x07050301, 0x080A0C0F, 0x00000011
         
-      org   0x2000
-IMG2: data 3, 3, 0x07040301, 0x090A0C0F, 0x00000011
+;      org   0x2000
+;IMG2: data 3, 3, 0x07040301, 0x090A0C0F, 0x00000011
 
-      org 0
+;      org 0
 PPAL: LEA(r30, PILA)  
       ;Prueba para nFiltrados
       or r3, r0, r0
       addu r3, r3, 10; probamos nFiltrados con 10
       PUSH (r3)
       
-      bsr NFiltrados
+      bsr nFiltrados
       
       POP(r3)
       
-      or r3, r0, r0
-      addu r3, r3, r0; probamos nFiltrados con 0
-      PUSH (r3)
+  ;    or r3, r0, r0
+  ;    addu r3, r3, r0; probamos nFiltrados con 0
+  ;    PUSH (r3)
       
-      bsr NFiltrados
+  ;    bsr nFiltrados
       
-      POP(r3)
+  ;    POP(r3)
       
-      or r3, r0, r0
-      addu r3, r3, 12; probamos nFiltrados con 12
-      PUSH (r3)
+  ;    or r3, r0, r0
+  ;    addu r3, r3, 12; probamos nFiltrados con 12
+  ;    PUSH (r3)
       
-      bsr NFiltrados
+  ;    bsr nFiltrados
       
-      POP(r3)
+  ;    POP(r3)
       
       ;Prueba para compara
-      LEA(r2, PILA)
-      LEA(r3, PILA)
+    ;  LEA(r2, PILA)
+    ;  LEA(r3, PILA)
       
-      PUSH(r2)
-      PUSH(r1)
+  ;    PUSH(r2)
+  ;    PUSH(r1)
       
-      bsr COMPARA
+  ;    bsr Comp
       
-      POP(r1)
-      POP(r30)
+  ;    POP(r1)
+  ;    POP(r30)
       
-      stop
+  ;    stop
       
 
-NFiltrados:
-    PUSH (r1)
+
+nFiltrados:    PUSH (r1)
     or   r29, r0, r0; r29 <- 0
     ld   r2, r30, r0; Cargamos oper
     cmp  r5, r2, r0
@@ -87,7 +88,7 @@ cero:
     jmp  (r1)
     
     
-COMPARA:
+Comp:
     PUSH (r1)
     ld    r20, r30, r0; Puntero Imagen1
     ld    r21, r30, 4; Puntero Imagen2
@@ -99,15 +100,28 @@ COMPARA:
 bucle_compara:
     ld.bu r3, r20, r0; Cargamos el byte de imagen1
     ld.bu r4, r21, r0; Cargamos el byte de imagen2
-    addu  r20, r20, 4; Apuntamos al siguiente byte de imagen1
-    addu  r21, r21, 4; Apuntamos al siguiente byte de imagen2
+    addu  r20, r20, 1; Apuntamos al siguiente byte de imagen1
+    addu  r21, r21, 1; Apuntamos al siguiente byte de imagen2
     subu  r3, r3, r4; Calculamos la diferencia
     cmp   r5, r3, r0
     bb1   gt, r5, nPositivo; Si el resultado es positivo vamos a la etiqueta positivo
     sub   r3, r0, r3; Si el resultado es negativo lo convertimos a positivo
 nPositivo:
     addu  r29, r29, r3; Sumamos al total el valor de la diferencia
-    subu  r2, r2, 1; Restamos a la dimensión/contador 1
+     º-+  r2, r2, 1; Restamos a la dimensión/contador 1
     cmp   r5, r2, r0
     bb1   gt, r5, bucle_compara; Si todavía no ha llegado al final, lo volvemos a ejecutar
+    jmp(r1)
+    
+    
+Filtro:
+    jmp(r1)
+FiltRec:
+    jmp(r1)
+ValorPixel:
+    
+    jmp(r1)
+FilPixel:
+    jmp(r1)
+SubMatriz:
     jmp(r1)
