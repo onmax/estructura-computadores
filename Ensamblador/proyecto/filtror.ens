@@ -46,13 +46,14 @@ CERO:           st r0, r0, r0
                 jmp  (r1)
     
 
-      org   0x50
-IMG1: data  3,3,0x07050301, 0x080A0C0F, 0x00000011
+      org   24
+IMG1: data  8,8,0x00000000, 0x00000000,0x00000000,0x00000000, 0x00000000,0x00000000,0x00000000, 0x00000000
     
-      org   0x100
-IMG2: data 3, 3, 0x07040301, 0x090A0C0F, 0x00000011
-      org 0x150
-PPAL2: LEA(r2, 0x8FF8)
+      org   100
+IMG2: data 8,8, 0x00000001, 0x00000001,0x00000003,0x00000001, 0x00000001,0x00000003,0x00000001, 0x00000001
+
+      org 200
+PPAL2: LEA(r30, 0x8FF8)
       LEA(r2, IMG1)
       PUSH(r2)
       LEA(r2, IMG2)
@@ -65,21 +66,21 @@ PPAL2: LEA(r2, 0x8FF8)
     
 Comp:           ld    r20, r30, r0; Puntero Imagen1
                 ld    r21, r30, 4; Puntero Imagen2
-                ld.bu r2, r20, r0; Número filas
-                ld.bu r3, r20, 4; Número columnas
+                ld    r2, r20, r0; Número filas
+                ld    r3, r20, 4; Número columnas
                 addu  r20, r20, 8; Apuntamos al primer elemento de imagen1
                 addu  r21, r21, 8; Apuntamos al primer elemento de imagen2
                 mulu  r2, r3, r2; Calculamos dimensión total
 bucle_compara:  ld.bu r3, r20, r0; Cargamos el byte de imagen1
                 ld.bu r4, r21, r0; Cargamos el byte de imagen2
-                addu  r20, r20, 1; Apuntamos al siguiente byte de imagen1
-                addu  r21, r21, 1; Apuntamos al siguiente byte de imagen2
+                addu  r20, r20, 4; Apuntamos al siguiente byte de imagen1
+                addu  r21, r21, 4; Apuntamos al siguiente byte de imagen2
                 subu  r3, r3, r4; Calculamos la diferencia
                 cmp   r5, r3, r0
                 bb1   gt, r5, nPositivo; Si el resultado es positivo vamos a la etiqueta positivo
                 sub   r3, r0, r3; Si el resultado es negativo lo convertimos a positivo
 nPositivo:      addu  r29, r29, r3; Sumamos al total el valor de la diferencia
-                sub   r2, r2, 1; Restamos a la dimensión/contador 1
+                sub   r2, r2, 4; Restamos a la dimensión/contador 1
                 cmp   r5, r2, r0
                 bb1   gt, r5, bucle_compara; Si todavía no ha llegado al final, lo volvemos a ejecutar
                 jmp(r1)
