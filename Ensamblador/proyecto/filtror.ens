@@ -87,6 +87,88 @@ nPositivo:      addu  r29, r29, r3; Sumamos al total el valor de la diferencia
     
 Filtro:         jmp(r1)
 FiltRec:        jmp(r1)
-ValorPixel:     jmp(r1)
+
+      org   2000
+IMG3: data 0x00000001, 0x00000001,0x00000001,0x00000000, 0x00000000,0x00000001,0x00000001, 0x00000001,0x00000001
+    
+      org   2048
+IMG4: data 0x00000001, 0x00000001,0x00000003,0x00000001, 0x00000001,0x00000003,0x00000001, 0x00000001,0x00000003
+                org 2100
+PPAL3:          LEA(r30, 0x8FF8)
+                LEA(r2, IMG3)
+                PUSH(r2)
+                LEA(r2, IMG4)
+                PUSH(r2)
+                bsr VPixel
+                POP(r1)
+                POP(r30)  
+                stop
+      
+VPixel:         ld r2, r30, r0; Subimagen
+                ld r3, r30, 4; Mfiltro
+                or r4,r0,r0; Acumulador
+                or r6, r0,r0; Contador
+                or r29, r0, r0
+bucle_vpixel:   ld.bu r20, r2, r0;
+                ld.bu r21, r3, r0;
+                cmp r5, r6, 9
+                bb1 eq, r5, fin_b_vpixel
+                addu r2, r2, 4
+                addu r3, r3, 4
+                mulu r20, r20, r21
+                addu r4, r4, r20
+                addu r6, r6, 1
+                br bucle_vpixel
+fin_b_vpixel:   or r29, r4, r4
+                jmp(r1)
+                
 FilPixel:       jmp(r1)
-SubMatriz:      jmp(r1)
+SubMatriz:      ld r20, r30, r0; Guardamos puntero matriz
+                ld r21, r30, 4; Guardamos puntero submatriz
+                ld r2, r20, r0; Filas de la imagen
+                subu r2, r2, 1
+                ld r3, r20, 4; Columna de la imagen
+                subu r3, r3, 1
+                ld r4, r30, 8; Fila de pixel
+                ld r6, r30, 12; Columna de pixel
+                cmp r5,r4,r0; Vemos que no sea borde
+                bb1 eq,r5,borde
+                cmp r5,r4,r2
+                bb1 eq,r5,borde
+                cmp r5,r6,r0
+                bb1 eq,r5,borde
+                cmp r5, r6,r3
+                bb1 eq,r5,borde; Ultima comprobación si es borde
+                addu r2, r2, 1; Obtenemos el numero de filas
+                addu r3, r3, 1; Obtenemos el numero de columnas
+                subu r4, r4, 1; Pasamos a saber el valor real de filas 
+                subu r6, r6, 1; Pasamos a saber el valor real de columnas 
+                addu r20, r20, r6; Apuntamos r20 a la columna que corresponda segun r6
+                mulu r7, r4, r3; Calculamos el salto en r7
+                addu r20, r20, r7; Nos colocamos en el primer elemento de la submatriz (donde vamos a insertar los elementos) en la matriz 
+                xor r8, r8, r8;Inicializamos el contador de elementos insertados (hasta 8)
+bucle_fila_subm:xor r9, r9, r9;Inicializamos el contador de elementos insertados por fila(hasta 2)
+bucle_col_subm: ld.bu r10, r21, r8; Cargamos el elemento de r21 en r10
+                st.b r10, r20, r9; Colocamos el elemento de r10 en la posicion de r20
+                addu r9, r9, 1; Añadimos 1 al contador
+                cmp r5, r9,2
+                bb1 ne, r5, bucle_col_subm; Vemos si hemos llegado a 2
+                cmp r5,r8, 8
+                bb1 eq, r5, fin_b_submatriz; Vemos si hemos llegado a 8
+                addu r8, r8, 1
+                subu r20, r20, 2; Colocamos r20 al inicio; Nos colocamos dos columnas a la izquierda
+                addu r20, r20, r3; Saltamos el el numero de columnas; Hacemos el salto de linea
+                br bucle_fila_subm
+borde:          ld r20, r30, 0; Volvemos al primer byte
+                ld r20, r20, 8
+                mulu r7, r3, r4; Nxi
+                addu r7, r7, r6; Nxi+j
+                ld.bu r8, r20, r7
+                xor r2, r2, r2
+b_borde:        st.b r8, r21, r2
+                addu r2, r2, 1
+                cmp r5, r2, 9
+                bb1 ne, r2, b_borde; Comprobamos que hayamos llegado a 9
+fin_submatriz  jmp(r1)
+                
+                jmp(r1)
