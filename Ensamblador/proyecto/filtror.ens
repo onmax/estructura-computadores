@@ -145,10 +145,10 @@ VPixel:         ld r2, r30, r0; Subimagen
                 or r6, r0,r0; Contador
                 or r29, r0, r0
 bucle_vpixel:   ld.bu r20, r2, r0;
-                ld.bu r21, r3, r0;
+                ld r21, r3, r0;
                 cmp r5, r6, 8
                 bb1 eq, r5, fin_b_vpixel
-                addu r2, r2, 4
+                addu r2, r2, 1
                 addu r3, r3, 4
                 mulu r20, r20, r21
                 addu r4, r4, r20
