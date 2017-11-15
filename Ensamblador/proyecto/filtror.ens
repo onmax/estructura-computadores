@@ -1,4 +1,4 @@
-LEA:  MACRO (ra, eti)
+﻿LEA:  MACRO (ra, eti)
       or   ra, r0, low(eti)
       or.u ra, ra, high(eti)
       ENDMACRO
@@ -30,12 +30,18 @@ nFiltrados:     or   r29, r0, r0; r29 <- 0
                 cmp  r5, r2, r0
                 bb1  eq, r5, CERO; Si el oper es cero, devolvemos en r29 cero
                 ld   r2, r0, r0; Cargamos nF
-                cmp  r5, r2, 11
-                bb1  ge, r5, neg_nFiltrado; Si el valor es mayor o igual a 11, devolvemos -1
+                cmp  r5, r2, 12
+                bb1  ge, r5, neg_nFiltrado; Si el valor es mayor o igual a 12, devolvemos -1
+		cmp  r5, r2, 11
+		bb1  eq, r5, once
                 addu r2, r2, 1; r2 <- r2+1
                 or   r29, r2, r2; r29 <- nF
                 st r29,r0,r0
                 jmp(r1)
+once:   	addu r2,r2,1
+		st   r2,r29,0
+		subu r29,r29,1
+		jmp(r1) 
 neg_nFiltrado:  subu r29,r29,1
                 jmp(r1)
 CERO:           st r0, r0, r0
@@ -146,7 +152,7 @@ VPixel:         ld r2, r30, r0; Subimagen
                 or r29, r0, r0
 bucle_vpixel:   ld.bu r20, r2, r0;
                 ld r21, r3, r0;
-                cmp r5, r6, 8
+                cmp r5, r6, i
                 bb1 eq, r5, fin_b_vpixel
                 addu r2, r2, 1
                 addu r3, r3, 4
@@ -174,10 +180,10 @@ PPAL4:          LEA(r30, 0x8FF0)
                 LEA(r2, IMG5)
                 PUSH(r2)
 		LEA(r2, IMG6)
-                LEA(r2, i)
+                addu r2,r2,1; ..i
                 PUSH(r2)
-                LEA(r2,j)
-                PUSH(r2)
+                addu r3,r3,1; ..j
+                PUSH(r3)
                 bsr SubMatriz
                 POP(r1)
                 POP(r30)  
