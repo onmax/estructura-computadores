@@ -69,15 +69,15 @@ Comp:           ld    r20, r30, r0; Puntero Imagen1
                 ld    r21, r30, 4; Puntero Imagen2
                 ld    r2, r20, r0; Número filas
                 ld    r3, r20, 4; Número columnas
-                cmp   r5, r20,0x00
+                cmp   r5, r20,0x00 ; Son para comprobar si las imagenes son nulas avuevonao
                 bb1   eq, r5, fin_comp
-                cmp   r5, r21, 0x00
-                bb1   eq, r5, fin_comp
+                cmp   r5, r21, 0x00; Para que las quitas si no hacen daño a nadie
+                bb1   eq, r5, fin_comp; Que mala costumbre de quitar las cosas sin preguntar hostia puta ya
                 addu  r20, r20, 8; Apuntamos al primer elemento de imagen1
                 addu  r21, r21, 8; Apuntamos al primer elemento de imagen2
                 mulu  r2, r3, r2; Calculamos dimensión total
-		subu r2,r2,1; Dimensión
-		xor r15,r15,15; Acumulador
+				subu r2,r2,1; Dimensión
+				xor r15,r15,15; Acumulador
 bucle_compara:  ld.bu r3, r20, r0; Cargamos el byte de imagen1
                 ld.bu r4, r21, r0; Cargamos el byte de imagen2
                 addu  r20, r20, 1; Apuntamos al siguiente byte de imagen1
@@ -90,7 +90,7 @@ nPositivo:      addu  r15, r15, r3; Sumamos al total el valor de la diferencia
                 sub   r2, r2, 1; Restamos a la dimensión/contador 1
                 cmp   r5, r2, r0
                 bb1   gt, r5, bucle_compara; Si todavía no ha llegado al final, lo volvemos a ejecutar
-		st r15,r29,r0
+		        st r15,r29,r0
                 jmp(r1)
 fin_comp:       st r0, r29, r0
                 jmp(r1)
@@ -143,12 +143,12 @@ PPAL3:          LEA(r30, 0x8FF8)
                 PUSH(r2)
                 LEA(r2, IMG4)
                 PUSH(r2)
-                bsr VPixel
+                bsr ValorPixel
                 POP(r1)
                 POP(r30)  
                 stop
       
-VPixel:         ld r2, r30, r0; Subimagen
+ValorPixel:     ld r2, r30, r0; Subimagen
                 ld r3, r30, 4; Mfiltro
                 or r4,r0,r0; Acumulador
                 or r6, r0,r0; Contador
@@ -163,7 +163,15 @@ bucle_vpixel:   ld.bu r20, r2, r0;
                 addu r4, r4, r20
                 addu r6, r6, 1
                 br bucle_vpixel
-fin_b_vpixel:   or r29, r4, r4
+fin_b_vpixel:   cmp r5, r4, 255; si el valor pixel es mayor que 255
+				bb1 gt, r5, trunc_sup
+				cmp r5, r4,0
+				bb1 ls, r5, trunc_inf
+trunc_sup:  	sub r16,r4,255; No se me ha ocurrido otra forma de hacerlo
+				sub r4,r4,r16 ; truncamos a 255	
+			    br fin_vpixel
+trunc_inf:		or r4, r0, r0; truncamos a 0
+fin_vpixel:		st r4, r29, r0
                 jmp(r1)
       
       org   3000
@@ -261,7 +269,7 @@ FilPixel:       PUSH (r1)
                 ld r2, r31, 20; MFiltro
                 PUSH(r2)
                 PUSH(r6)
-                bsr VPixel
+                bsr ValorPixel
                 addu r30, r30, 8; Eliminamos pila
                 ld r2, r31, 20; MFiltro
                 xor r4, r4, r4
@@ -288,5 +296,4 @@ enRango:        or r30, r31, r31
                 POP (r31)
                 POP (r1)
                 jmp(r1)
-                
                 
