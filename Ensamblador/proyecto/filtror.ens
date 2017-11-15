@@ -15,7 +15,6 @@ POP:  MACRO(ra)
       
        org   0 
 NF:    data  11
-
         org 1000
 PPAL: LEA(r30, 0x8FFC)  
       ;Prueba para nFiltrados
@@ -46,7 +45,7 @@ CERO:           st r0, r0, r0
       org   24
 IMG1: data  3,3,0x00000001, 0x00000001,0x00000003,0x00000001, 0x00000001,0x00000003,0x00000001, 0x00000001, 0x00000000 
       org   100
-IMG2: data  3,3,0x00000001, 0x00000001,0x00000003,0x00000001, 0x00000001,0x00000003,0x00000001, 0x00000001, 0x00000000
+IMG2: data  3,3,0x0000000, 0x00000001,0x00000003,0x00000001, 0x00000001,0x00000003,0x00000001, 0x00000001, 0x00000000
 
       org 200
 PPAL2: LEA(r30, 0x8FF8)
@@ -64,6 +63,10 @@ Comp:           ld    r20, r30, r0; Puntero Imagen1
                 ld    r21, r30, 4; Puntero Imagen2
                 ld    r2, r20, r0; Número filas
                 ld    r3, r20, 4; Número columnas
+                ;cmp   r5, r20,0x00
+                ;bb1   eq, r5, fin_comp
+                ;cmp   r5, r21, 0x00
+                ;bb1   eq, r5, fin_comp
                 addu  r20, r20, 8; Apuntamos al primer elemento de imagen1
                 addu  r21, r21, 8; Apuntamos al primer elemento de imagen2
                 mulu  r2, r3, r2; Calculamos dimensión total
@@ -80,8 +83,44 @@ nPositivo:      addu  r29, r29, r3; Sumamos al total el valor de la diferencia
                 cmp   r5, r2, r0
                 bb1   gt, r5, bucle_compara; Si todavía no ha llegado al final, lo volvemos a ejecutar
                 jmp(r1)
+fin_comp:       st r0, r29, r29
+                jmp(r1)
     
-Filtro:         jmp(r1)
+Filtro:         PUSH(r1)
+	            PUSH(r31)
+		        or r31,r30,r30
+		        ld r20,r31,8; Imagen
+		        ld r21,r31,12; Imagen Filtrada
+		        ld r22,r31,16; MFiltro
+		        ld r2,r20,0; num filas
+		        ld r3,r20,4; num colum
+		        subu r2,r2,1
+		        subu r3,r3,1
+		        addu r20,r20,8
+		        st r2,r21,0; Insertamos num filas en imFiltrada
+		        st r3,r21,4; Insertamos num colum
+		        addu r21,r21,8
+		        xor r9,r9,r9; contador filas
+		        xor r10,r10,r10; contador columnas
+bucle_Fil:      cmp r5,r10,r3
+		        bb1 ne,r5,continua
+		        addu r9,r9,1
+		        xor r11,r11,r11
+continua:       cmp r5,r9,r2
+                bb1 eq,r5,fin
+		        PUSH(r20)
+		        PUSH(r9)
+		        PUSH(r11)
+		        PUSH(r22)
+		        bsr FilPixel
+		        addu r30,r30,16
+		        st r29,r22,r0
+		        addu r22,r22,4
+		        addu r11,r11,1
+fin:	        or r30,r31,r31
+                POP(r31)
+		        POP(r1)
+		        jmp(r1)
 FiltRec:        jmp(r1)
 
       org   2000
@@ -107,7 +146,7 @@ VPixel:         ld r2, r30, r0; Subimagen
                 or r29, r0, r0
 bucle_vpixel:   ld.bu r20, r2, r0;
                 ld.bu r21, r3, r0;
-                cmp r5, r6, 9
+                cmp r5, r6, 8
                 bb1 eq, r5, fin_b_vpixel
                 addu r2, r2, 4
                 addu r3, r3, 4
@@ -208,7 +247,7 @@ FilPixel:       PUSH (r1)
                 PUSH (r6)
                 PUSH (r2)
                 bsr SubMatriz
-                adu r30, r30, 16; Eliminamos pila
+                addu r30, r30, 16; Eliminamos pila
                 or r6, r30, r30; Recargamos el ptro submatriz
                 ld r2, r31, 20; MFiltro
                 PUSH(r2)
@@ -226,9 +265,17 @@ bucle_filpixel: ld r3, r2, r6; bucle para sumar elementos de FILTROS
                 cmp r5, r4, 0
                 bb1 ne, r5, not_cero_filp
                 addu r4, r4, 1
-                ;Paso del algoritmo 5 ¡¡¡REVISAR!!!!
 not_cero_filp:  divu r29, r29, r4
-                or r30, r31, r31
+                cmp r5, r29, 255
+                bb1 le, r5, enRango
+                xor r29, r29, r29
+                addu r29, r29, 255
+                bsr enRango
+                divu r29, r29, r4
+                cmp r5, r29, 0
+                bb1 ge, r5, enRango
+                xor r29, r29, r29
+enRango:        or r30, r31, r31
                 POP (r31)
                 POP (r1)
                 jmp(r1)
