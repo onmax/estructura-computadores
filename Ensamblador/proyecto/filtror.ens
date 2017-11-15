@@ -1,4 +1,4 @@
-ï»¿LEA:  MACRO (ra, eti)
+LEA:  MACRO (ra, eti)
       or   ra, r0, low(eti)
       or.u ra, ra, high(eti)
       ENDMACRO
@@ -39,7 +39,7 @@ nFiltrados:     or   r29, r0, r0; r29 <- 0
                 st r29,r0,r0
                 jmp(r1)
 once:   	addu r2,r2,1
-		st   r2,r29,0
+		st   r2,r0,r0
 		subu r29,r29,1
 		jmp(r1) 
 neg_nFiltrado:  subu r29,r29,1
@@ -67,66 +67,69 @@ PPAL2: LEA(r30, 0x8FF8)
     
 Comp:           ld    r20, r30, r0; Puntero Imagen1
                 ld    r21, r30, 4; Puntero Imagen2
-                ld    r2, r20, r0; NÃºmero filas
-                ld    r3, r20, 4; NÃºmero columnas
-                ;cmp   r5, r20,0x00
-                ;bb1   eq, r5, fin_comp
-                ;cmp   r5, r21, 0x00
-                ;bb1   eq, r5, fin_comp
+                ld    r2, r20, r0; Número filas
+                ld    r3, r20, 4; Número columnas
+                cmp   r5, r20,0x00
+                bb1   eq, r5, fin_comp
+                cmp   r5, r21, 0x00
+                bb1   eq, r5, fin_comp
                 addu  r20, r20, 8; Apuntamos al primer elemento de imagen1
                 addu  r21, r21, 8; Apuntamos al primer elemento de imagen2
-                mulu  r2, r3, r2; Calculamos dimensiÃ³n total
+                mulu  r2, r3, r2; Calculamos dimensión total
+		subu r2,r2,1; Dimensión
+		xor r15,r15,15; Acumulador
 bucle_compara:  ld.bu r3, r20, r0; Cargamos el byte de imagen1
                 ld.bu r4, r21, r0; Cargamos el byte de imagen2
-                addu  r20, r20, 4; Apuntamos al siguiente byte de imagen1
-                addu  r21, r21, 4; Apuntamos al siguiente byte de imagen2
+                addu  r20, r20, 1; Apuntamos al siguiente byte de imagen1
+                addu  r21, r21, 1; Apuntamos al siguiente byte de imagen2
                 subu  r3, r3, r4; Calculamos la diferencia
                 cmp   r5, r3, r0
                 bb1   gt, r5, nPositivo; Si el resultado es positivo vamos a la etiqueta positivo
                 sub   r3, r0, r3; Si el resultado es negativo lo convertimos a positivo
-nPositivo:      addu  r29, r29, r3; Sumamos al total el valor de la diferencia
-                sub   r2, r2, 1; Restamos a la dimensiÃ³n/contador 1
+nPositivo:      addu  r15, r15, r3; Sumamos al total el valor de la diferencia
+                sub   r2, r2, 1; Restamos a la dimensión/contador 1
                 cmp   r5, r2, r0
-                bb1   gt, r5, bucle_compara; Si todavÃ­a no ha llegado al final, lo volvemos a ejecutar
+                bb1   gt, r5, bucle_compara; Si todavía no ha llegado al final, lo volvemos a ejecutar
+		st r15,r29,r0
                 jmp(r1)
-fin_comp:       st r0, r29, r29
+fin_comp:       st r0, r29, r0
                 jmp(r1)
     
 Filtro:         PUSH(r1)
-	            PUSH(r31)
-		        or r31,r30,r30
-		        ld r20,r31,8; Imagen
-		        ld r21,r31,12; Imagen Filtrada
-		        ld r22,r31,16; MFiltro
-		        ld r2,r20,0; num filas
-		        ld r3,r20,4; num colum
-		        subu r2,r2,1
-		        subu r3,r3,1
-		        addu r20,r20,8
-		        st r2,r21,0; Insertamos num filas en imFiltrada
-		        st r3,r21,4; Insertamos num colum
-		        addu r21,r21,8
-		        xor r9,r9,r9; contador filas
-		        xor r10,r10,r10; contador columnas
+	        PUSH(r31)
+		or r31,r30,r30
+		ld r20,r31,8; Imagen
+	        ld r21,r31,12; Imagen Filtrada
+	        ld r22,r31,16; MFiltro
+		ld r2,r20,0; num filas
+	        ld r3,r20,4; num colum
+	        subu r2,r2,1
+		subu r3,r3,1
+	        addu r20,r20,8
+	        st r2,r21,0; Insertamos num filas en imFiltrada
+		st r3,r21,4; Insertamos num colum
+	        addu r21,r21,8
+	        xor r9,r9,r9; contador filas
+		xor r10,r10,r10; contador columnas
 bucle_Fil:      cmp r5,r10,r3
-		        bb1 ne,r5,continua
-		        addu r9,r9,1
-		        xor r11,r11,r11
+		bb1 ne,r5,continua
+	 	addu r9,r9,1
+		xor r11,r11,r11
 continua:       cmp r5,r9,r2
                 bb1 eq,r5,fin
-		        PUSH(r20)
-		        PUSH(r9)
-		        PUSH(r11)
-		        PUSH(r22)
-		        bsr FilPixel
-		        addu r30,r30,16
-		        st r29,r22,r0
-		        addu r22,r22,4
-		        addu r11,r11,1
+		PUSH(r20)
+		PUSH(r9)
+		PUSH(r11)
+		PUSH(r22)
+		bsr FilPixel
+		addu r30,r30,16
+		st r29,r22,r0
+		addu r22,r22,4
+		addu r11,r11,1
 fin:	        or r30,r31,r31
                 POP(r31)
-		        POP(r1)
-		        jmp(r1)
+		POP(r1)
+		jmp(r1)
 FiltRec:        jmp(r1)
 
       org   2000
@@ -140,19 +143,19 @@ PPAL3:          LEA(r30, 0x8FF8)
                 PUSH(r2)
                 LEA(r2, IMG4)
                 PUSH(r2)
-                bsr VPixel
+                bsr ValorPixel
                 POP(r1)
                 POP(r30)  
                 stop
       
-VPixel:         ld r2, r30, r0; Subimagen
+ValorPixel:         ld r2, r30, r0; Subimagen
                 ld r3, r30, 4; Mfiltro
                 or r4,r0,r0; Acumulador
                 or r6, r0,r0; Contador
                 or r29, r0, r0
 bucle_vpixel:   ld.bu r20, r2, r0;
                 ld r21, r3, r0;
-                cmp r5, r6, i
+                cmp r5, r6, 8
                 bb1 eq, r5, fin_b_vpixel
                 addu r2, r2, 1
                 addu r3, r3, 4
@@ -204,7 +207,7 @@ SubMatriz:      ld r20, r30, r0; Guardamos puntero matriz
                 cmp r5,r6,r0
                 bb1 eq,r5,borde
                 cmp r5, r6,r3
-                bb1 eq,r5,borde; Ultima comprobaciÃ³n si es borde
+                bb1 eq,r5,borde; Ultima comprobación si es borde
                 addu r2, r2, 1; Obtenemos el numero de filas
                 addu r3, r3, 1; Obtenemos el numero de columnas
                 subu r4, r4, 1; Pasamos a saber el valor real de filas 
@@ -216,7 +219,7 @@ SubMatriz:      ld r20, r30, r0; Guardamos puntero matriz
 bucle_fila_subm:xor r9, r9, r9;Inicializamos el contador de elementos insertados por fila(hasta 2)
 bucle_col_subm: ld.bu r10, r21, r8; Cargamos el elemento de r21 en r10
                 st.b r10, r20, r9; Colocamos el elemento de r10 en la posicion de r20
-                addu r9, r9, 1; AÃ±adimos 1 al contador
+                addu r9, r9, 1; Añadimos 1 al contador
                 cmp r5, r9,2
                 bb1 ne, r5, bucle_col_subm; Vemos si hemos llegado a 2
                 cmp r5,r8, 8
@@ -258,7 +261,7 @@ FilPixel:       PUSH (r1)
                 ld r2, r31, 20; MFiltro
                 PUSH(r2)
                 PUSH(r6)
-                bsr VPixel
+                bsr ValorPixel
                 addu r30, r30, 8; Eliminamos pila
                 ld r2, r31, 20; MFiltro
                 xor r4, r4, r4
@@ -287,6 +290,3 @@ enRango:        or r30, r31, r31
                 jmp(r1)
                 
                 
-ValorPixel:       jmp(r1)
-
-
