@@ -97,7 +97,7 @@ fin_comp:       st r0, r29, r0
     
 Filtro:         PUSH(r1)
 	        PUSH(r31)
-		or r31,r30,r30
+		addu r31,r30,r0
 		ld r20,r31,8; Imagen
 	        ld r21,r31,12; Imagen Filtrada
 	        ld r22,r31,16; MFiltro
@@ -252,7 +252,7 @@ fin_b_submatriz:jmp(r1)
 
 FilPixel:       PUSH (r1)
                 PUSH (r31)
-                or r30, r31, r31
+                addu r31, r30, r0
                 subu r30, r30,12
                 ld r2, r31, 8; img
                 ld r3, r31, 12; i
