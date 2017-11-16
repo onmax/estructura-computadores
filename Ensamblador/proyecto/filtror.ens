@@ -286,7 +286,7 @@ not_cero_filp:  divu r29, r29, r4
                 bb1 le, r5, enRango
                 xor r29, r29, r29
                 addu r29, r29, 255
-                bsr enRango
+                br enRango
                 divu r29, r29, r4
                 cmp r5, r29, 0
                 bb1 ge, r5, enRango
