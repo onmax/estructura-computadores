@@ -91,7 +91,6 @@ nPositivo:      addu r29, r29, r3
                 DBNZ(r2, b_comp)
                 jmp(r1)
                 
-                
 
 
       org   2000
@@ -192,12 +191,14 @@ borde:          mulu r17,r3,r4
                 addu r20,r20,r17
                 ld.bu r3,r20,r0
                 xor r2,r2,r2
-		        xor r4, r4, r4
-		        addu r4, r4, 9; Contador
+
+		xor r4, r4, r4
+		addu r4, r4, 9; Contador
 b_borde:        st.b r3, r21, r2
                 addu r2, r2, 1
                 DBNZ(r4,b_borde)
 fin_b_submatriz:jmp(r1)
+
 
         org 4000
 IMG7:data 4,8,0,0,0x33000000,0,0,0,0,0
@@ -217,91 +218,51 @@ PPAL5:          LEA(r30, 0x8FF0)
                 bsr FilPixel
                 addu r30, r30, 16 
                 stop
-                
-FilPixel:       PUSH (r1)
-                PUSH (r31)
-                or r30, r31, r31
-                subu r30, r30,12
-                ld r2, r31, 8; img
-                ld r3, r31, 12; i
-                ld r4, r31, 16; j
-                ;ld r6, r30, r0
-                xor r6,r6,r6
-                PUSH (r4)
-                PUSH (r3)
-                PUSH (r6)
-                PUSH (r2)
-                bsr SubMatriz
-                addu r30, r30, 16; Eliminamos pila
-                st r6, r30, r0; Recargamos el ptro submatriz
-                ld r2, r31, 20; MFiltro
-                PUSH(r2)
-                PUSH(r6)
+
+FilPixel:	PUSH(r1)
+		PUSH(r31)
+		or r31, r30, r30
+	        subu r30, r30, 12
+		ld r2, r31, 8; Imagen
+		ld r3, r31, -12; SubImg
+		ld r4, r31, 12; i
+		ld r6, r31, 16; j
+		PUSH(r6)
+		PUSH(r4)
+		PUSH(r3)
+		PUSH(r2)
+		bsr SubMatriz
+	        addu r30, r30, 16; Deshacemos pila
+		ld r2, r31, -12; SubImg
+		ld   r3, r31, 20; MFiltro
+		PUSH(r3); SubImg
+		PUSH(r2);Imagen
                 bsr ValorPixel
-                addu r30, r30, 8; Eliminamos pila
-                ld r2, r31, 20; MFiltro
-                xor r4, r4, r4
-                or r6, r0,r0
-bucle_filpixel: ld r3, r2, 0; bucle para sumar elementos de FILTROS
-                addu r2,r2,4
-                addu r6, r6, 1
-                addu r4, r4, r3
-                cmp r5, r6, 9
-                bb1 ne, r5, bucle_filpixel
-                cmp r5, r4, 0
-                bb1 ne, r5, not_cero_filp
-                addu r4, r4, 1
-not_cero_filp:  divu r29, r29, r4
-                cmp r5, r29, 255
-                bb1 gt, r5, mayor_rango
-                cmp r5, r29, 0
-                bb1 ls, r5, menor_rango
-mayor_rango:    xor r29, r29, r29
-                addu r29, r29, 255
-                br fin_filpixel
-menor_rango:    xor r29,r29,r29
-fin_filpixel:   or r30, r31, r31
-                POP (r31)
-                POP (r1)
-                jmp(r1)
-                
-Filtro:         PUSH(r1)
-	        PUSH(r31)
-		or r31,r30,r30
-		ld r20,r31,8; Imagen
-	        ld r21,r31,12; Imagen Filtrada
-	        ld r22,r31,16; MFiltro
-		ld r2,r20,0; num filas
-	        ld r3,r20,4; num colum
-	        subu r2,r2,1
-		subu r3,r3,1
-	        addu r20,r20,8
-	        st r2,r21,0; Insertamos num filas en imFiltrada
-		st r3,r21,4; Insertamos num colum
-	        addu r21,r21,8
-	        xor r9,r9,r9; contador filas
-		xor r10,r10,r10; contador columnas
-bucle_Fil:      cmp r5,r10,r3
-		bb1 ne,r5,continua
-	 	addu r9,r9,1
-		xor r11,r11,r11
-continua:       cmp r5,r9,r2
-                bb1 eq,r5,fin
-		PUSH(r20)
-		PUSH(r9)
-		PUSH(r11)
-		PUSH(r22)
-		bsr FilPixel
-		addu r30,r30,16
-		st r29,r22,r0
-		addu r22,r22,4
-		addu r11,r11,1
-fin:	        or r30,r31,r31
-                POP(r31)
+	        addu r30, r30, 8; Deshacemos pila
+		ld  r20, r31, 20
+		xor r3, r3, r3
+	        addu r3, r3, 9; Contador
+	        xor r4, r4, r4; Resultado sumatorio
+sumMFiltro:	ld r6, r20, r0
+		add r4, r4, r6
+		addu r20, r20, 4
+		DBNZ(r3, sumMFiltro)
+		cmp r5, r4, 0
+		bb1 eq, r5, ceroMFiltro
+		divs r29, r29, r4
+ceroMFiltro:	cmp r5, r20, 0
+		bb1 lt r5, set0
+		cmp r5, r29, 255
+		bb1 gt, r5, set255
+set0:		or r29, r0, r0
+		br fin_FilPixel
+set255:		or r29, r0, 255
+fin_FilPixel:	or r30, r31, r31
+		POP(r31)
 		POP(r1)
 		jmp(r1)
-            
-                
+		
+
 FiltRec:        PUSH(r1)
                 PUSH(r31)
                 addu r31,r30,r0; creamos marco de pila(modo aaron)
@@ -347,5 +308,3 @@ fin_filrec:     or r30, r31, r31
                 POP (r31)
                 POP (r1)
                 jmp(r1)
-                
-                
