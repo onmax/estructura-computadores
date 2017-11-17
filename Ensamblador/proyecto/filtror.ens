@@ -307,33 +307,32 @@ Filtro:         PUSH(r1)
                 ld r22,r31,16; MFiltro
                 ld r2,r20,0; num filas
                 ld r3,r20,4; num colum
-                ;subu r2,r2,1
-                ;subu r3,r3,1
+                subu r2,r2,1
+                subu r3,r3,1
                 st r2, r22, 0
                 st r3, r22, 4
-                addu r21,r21,8
-                xor r9,r9,r9; contador filas
-                xor r10,r10,r10; contador columnas
-     bucle_Fil: cmp r5,r10,r3
-                bb1 ne,r5,continua
-                addu r9,r9,1; Hemos llegado al final de la columna
-                xor r10,r10,r10
-continua:       PUSH(r21)
+                xor r9, r9, r9
+bfiltro_filas:  cmp r5, r9, r2
+                bb1 gt, r5, fin
+                xor r10, r10, r10
+bfiltro_columna:cmp r5, r10, r3
+                bb1 gt, r5, bfiltro_filas
+                PUSH(r21)
                 PUSH(r22)
-                PUSH(r10)
-                PUSH(r9)
+                PUSH(r3)
+                PUSH(r2)
                 PUSH(r20)
                 bsr FilPixel
                 POP(r20)
-                POP(r9)
-                POP(r10)
+                POP(r2)
+                POP(r3)
                 POP(r22)
                 POP(r21)
-                st.b r29,r21,r0
-                addu r21,r21,1
-                addu r10,r10,1
-                cmp r5,r9,r2
-                bb1 ls,r5,bucle_Fil
+                st.b r29, r21, 0
+                addu r21, r21, 1
+                addu r9, r9, 1
+                addu r10, r10, 1
+                br bfiltro_columna
 fin:            or r30,r31,r31
                 POP(r31)
                 POP(r1)
