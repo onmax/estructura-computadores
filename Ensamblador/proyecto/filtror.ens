@@ -250,49 +250,47 @@ b_borde:        st.b r3, r21, r2
                 DBNZ(r4,b_borde)
 fin_b_submatriz:jmp(r1)
 
-FilPixel:       PUSH (r1)
-                PUSH (r31)
-                addu r31, r30, r0
-                subu r30, r30,12
-                ld r2, r31, 8; img
-                ld r3, r31, 12; i
-                ld r4, r31, 16; j
-                ld r6, r30, r0
-                PUSH (r4)
-                PUSH (r3)
-                PUSH (r6)
-                PUSH (r2)
-                bsr SubMatriz
-                addu r30, r30, 16; Eliminamos pila
-                or r6, r30, r30; Recargamos el ptro submatriz
-                ld r2, r31, 20; MFiltro
-                PUSH(r2)
-                PUSH(r6)
+FilPixel:	PUSH(r1)
+		PUSH(r31)
+		or r31, r30, r30
+	        subu r30, r30, 12
+		ld r2, r31, 8; Imagen
+		ld r3, r31, -12; SubImg
+		ld r4, r31, 12; i
+		ld r6, r31, 16; j
+		PUSH(r6)
+		PUSH(r4)
+		PUSH(r3)
+		PUSH(r2)
+		bsr SubMatriz
+	        addu r30, r30, 16; Deshacemos pila
+		ld r2, r31, -12; SubImg
+		ld   r3, r31, 20; MFiltro
+		PUSH(r3); SubImg
+		PUSH(r2);Imagen
                 bsr ValorPixel
-                addu r30, r30, 8; Eliminamos pila
-                ld r2, r31, 20; MFiltro
-                xor r4, r4, r4
-                xor r6, r6, r6
-bucle_filpixel: ld r3, r2, r6; bucle para sumar elementos de FILTROS
-                addu r6, r6, 4
-                addu r4, r4, r3
-                cmp r5, r6, 32
-                bb1 ne, r5, bucle_filpixel
-                cmp r5, r4, 0
-                bb1 ne, r5, not_cero_filp
-                addu r4, r4, 1
-not_cero_filp:  divu r29, r29, r4
-                cmp r5, r29, 255
-                bb1 le, r5, enRango
-                xor r29, r29, r29
-                addu r29, r29, 255
-                br enRango
-                divu r29, r29, r4
-                cmp r5, r29, 0
-                bb1 ge, r5, enRango
-                xor r29, r29, r29
-enRango:        or r30, r31, r31
-                POP (r31)
-                POP (r1)
-                jmp(r1)
-                
+	        addu r30, r30, 8; Deshacemos pila
+		ld  r20, r31, 20
+		xor r3, r3, r3
+	        addu r3, r3, 9; Contador
+	        xor r4, r4, r4; Resultado sumatorio
+sumMFiltro:	ld r6, r20, r0
+		add r4, r4, r6
+		addu r20, r20, 4
+		DBNZ(r3, sumMFiltro)
+		cmp r5, r4, 0
+		bb1 eq, r5, ceroMFiltro
+		divs r29, r29, r4
+ceroMFiltro:	cmp r5, r20, 0
+		bb1 lt r5, set0
+		cmp r5, r29, 255
+		bb1 gt, r5, set255
+set0:		or r29, r0, r0
+		br fin_FilPixel
+set255:		or r29, r0, 255
+fin_FilPixel:	or r30, r31, r31
+		POP(r31)
+		POP(r1)
+		jmp(r1)
+set0:		
+		
