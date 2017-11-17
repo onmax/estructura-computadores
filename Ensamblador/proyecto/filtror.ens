@@ -13,6 +13,12 @@ POP:  MACRO(ra)
       addu r30, r30, 4
       ENDMACRO
       
+DBNZ: MACRO(ra, eti)
+      sub ra, ra, 1
+      cmp r5, ra, 0
+      bb0 2, r5, eti
+      ENDMACRO
+    
        org   0 
 NF:    data  11
         org 1000
@@ -49,10 +55,9 @@ CERO:           st r0, r0, r0
     
 
       org   24
-IMG1: data  3,3,0x00000001, 0x00000001,0x00000003,0x00000001, 0x00000001,0x00000003,0x00000001, 0x00000001, 0x00000000 
+IMG1: data 4,4,0x01000000,0,0,0
       org   100
-IMG2: data  3,3,0x0000000, 0x00000001,0x00000003,0x00000001, 0x00000001,0x00000003,0x00000001, 0x00000001, 0x00000000
-
+IMG2: data  4,4,0,0x01000000,0,0
       org 200
 PPAL2: LEA(r30, 0x8FF8)
       LEA(r2, IMG1)
@@ -60,41 +65,206 @@ PPAL2: LEA(r30, 0x8FF8)
       LEA(r2, IMG2)
       PUSH(r2)
       bsr Comp
-      POP(r1)
-      POP(r30)  
+      addu r30, r30, 8
       stop
     
     
-Comp:           ld    r20, r30, r0; Puntero Imagen1
+    
+    
+ Comp:          ld    r20, r30, r0; Puntero Imagen1
                 ld    r21, r30, 4; Puntero Imagen2
                 ld    r2, r20, r0; Número filas
                 ld    r3, r20, 4; Número columnas
-                cmp   r5, r20,0x00
-                bb1   eq, r5, fin_comp
-                cmp   r5, r21, 0x00
-                bb1   eq, r5, fin_comp
                 addu  r20, r20, 8; Apuntamos al primer elemento de imagen1
                 addu  r21, r21, 8; Apuntamos al primer elemento de imagen2
                 mulu  r2, r3, r2; Calculamos dimensión total
-		subu r2,r2,1; Dimensión
-		xor r15,r15,15; Acumulador
-bucle_compara:  ld.bu r3, r20, r0; Cargamos el byte de imagen1
+                xor r29, r29, r29
+b_comp:         ld.bu r3, r20, r0; Cargamos el byte de imagen1
                 ld.bu r4, r21, r0; Cargamos el byte de imagen2
                 addu  r20, r20, 1; Apuntamos al siguiente byte de imagen1
                 addu  r21, r21, 1; Apuntamos al siguiente byte de imagen2
                 subu  r3, r3, r4; Calculamos la diferencia
                 cmp   r5, r3, r0
-                bb1   gt, r5, nPositivo; Si el resultado es positivo vamos a la etiqueta positivo
+                bb1   ge, r5, nPositivo; Si el resultado es positivo vamos a la etiqueta positivo
                 sub   r3, r0, r3; Si el resultado es negativo lo convertimos a positivo
-nPositivo:      addu  r15, r15, r3; Sumamos al total el valor de la diferencia
-                sub   r2, r2, 1; Restamos a la dimensión/contador 1
-                cmp   r5, r2, r0
-                bb1   gt, r5, bucle_compara; Si todavía no ha llegado al final, lo volvemos a ejecutar
-		st r15,r29,r0
+nPositivo:      addu r29, r29, r3
+                DBNZ(r2, b_comp)
                 jmp(r1)
-fin_comp:       st r0, r29, r0
+                
+                
+
+
+      org   2000
+IMG3: data   0,0x00000055,0
+      org   2048
+MFILTRO: data 0,0,0,0,1,0,0,0,0
+                org 2100
+PPAL3:          LEA(r30, 0x8FF8)
+                LEA(r2, MFILTRO)
+                PUSH(r2)
+                LEA(r2, IMG3)
+                PUSH(r2)
+                bsr ValorPixel
+                POP(r1)
+                POP(r30)  
+                stop
+      
+ValorPixel:     ld r2, r30, r0; Subimagen
+                ld r3, r30, 4; Mfiltro
+                or r4,r0,r0; Acumulador
+                or r6, r0,r0; Contador
+                or r29, r0, r0
+bucle_vpixel:   ld.bu r20, r2, r0;
+                ld r21, r3, r0;
+                cmp r5, r6, 9
+                bb1 eq, r5, fin_b_vpixel
+                addu r2, r2, 1
+                addu r3, r3, 4
+                muls r20, r20, r21
+                add r4, r4, r20
+                addu r6, r6, 1
+                br bucle_vpixel
+fin_b_vpixel:	or r29,r4,r4
                 jmp(r1)
-    
+
+     org   3000
+IMG5: data 5,5,0x04030201,0x08070605,0x0C0B0A09,0x100F0E0D,0x14131211,0x18171615,0x00000019
+
+
+
+      org 3100
+IMG6:data 0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF
+      
+      org 3300
+PPAL4:          LEA(r30, 0x8FF0)
+                or r2,r0,0
+                PUSH(r2)
+                or r3,r0,0
+                PUSH(r3)
+                LEA(r2, IMG6)
+                PUSH(r2)
+		        LEA(r2, IMG5)
+                PUSH(r2)
+                bsr SubMatriz
+                addu r30, r30, 16 
+                stop
+                
+SubMatriz:      ld r20, r30, r0; Guardamos puntero matriz
+                ld r21, r30, 4; Guardamos puntero submatriz
+                ld r2, r20, r0; Filas de la imagen
+                ld r3, r20, 4; Columna de la imagen
+                ld r4, r30, 8; Fila de pixel
+                ld r6, r30, 12; Columna de pixel
+                cmp r5,r4,r0; Vemos que no sea borde
+                bb1 eq,r5,borde
+		        cmp r5,r6,r0
+                bb1 eq,r5,borde
+		        addu r4, r4, 1
+                cmp r5,r4,r2
+		        subu r4, r4, 1
+                bb1 eq,r5,borde 
+                addu r6, r6, 1
+		        cmp r5, r6,r3
+		        subu r6, r6, 1
+                bb1 eq,r5,borde; Ultima comprobación si es borde
+		        subu r4, r4, 1
+		        subu r6, r6, 1
+		        xor r8,r8,r8
+		        addu r8, r8, 3
+bucle_fila_subm:xor r9, r9, r9;Inicializamos el contador de elementos insertados por fila
+		        addu r9, r9, 3;
+		        addu r20, r20, 8
+		        mulu r17, r4, r3
+		        addu r17, r17, r6
+		        addu r20, r20, r17
+bucle_col_subm: ld.bu r14, r20, r0
+		        st.b r14, r21, r0
+		        addu r20, r20, 1
+		        addu r21, r21, 1
+		        DBNZ(r9, bucle_col_subm)
+		        ld r20, r30, r0
+		        addu r4, r4, 1
+		        DBNZ(r8, bucle_fila_subm)
+		        br fin_b_submatriz
+borde:          mulu r17,r3,r4
+		        addu r17, r17,r6
+                addu r20, r20, 8
+                addu r20,r20,r17
+                ld.bu r3,r20,r0
+                xor r2,r2,r2
+		        xor r4, r4, r4
+		        addu r4, r4, 9; Contador
+b_borde:        st.b r3, r21, r2
+                addu r2, r2, 1
+                DBNZ(r4,b_borde)
+fin_b_submatriz:jmp(r1)
+
+        org 4000
+IMG7:data 4,8,0,0,0x33000000,0,0,0,0,0
+        org 4100
+MFILTRO2:data  1,1,1,1,0,1,1,1,1
+        org 4200
+        
+PPAL5:          LEA(r30, 0x8FF0)
+                or r2,r0,1
+                PUSH(r2)
+                or r3,r0,1
+                PUSH(r3)
+                LEA(r2, IMG7)
+                PUSH(r2)
+		        LEA(r2, MFILTRO2)
+                PUSH(r2)
+                bsr FilPixel
+                addu r30, r30, 16 
+                stop
+                
+FilPixel:       PUSH (r1)
+                PUSH (r31)
+                or r30, r31, r31
+                subu r30, r30,12
+                ld r2, r31, 8; img
+                ld r3, r31, 12; i
+                ld r4, r31, 16; j
+                ;ld r6, r30, r0
+                xor r6,r6,r6
+                PUSH (r4)
+                PUSH (r3)
+                PUSH (r6)
+                PUSH (r2)
+                bsr SubMatriz
+                addu r30, r30, 16; Eliminamos pila
+                st r6, r30, r0; Recargamos el ptro submatriz
+                ld r2, r31, 20; MFiltro
+                PUSH(r2)
+                PUSH(r6)
+                bsr ValorPixel
+                addu r30, r30, 8; Eliminamos pila
+                ld r2, r31, 20; MFiltro
+                xor r4, r4, r4
+                or r6, r0,r0
+bucle_filpixel: ld r3, r2, 0; bucle para sumar elementos de FILTROS
+                addu r2,r2,4
+                addu r6, r6, 1
+                addu r4, r4, r3
+                cmp r5, r6, 9
+                bb1 ne, r5, bucle_filpixel
+                cmp r5, r4, 0
+                bb1 ne, r5, not_cero_filp
+                addu r4, r4, 1
+not_cero_filp:  divu r29, r29, r4
+                cmp r5, r29, 255
+                bb1 gt, r5, mayor_rango
+                cmp r5, r29, 0
+                bb1 ls, r5, menor_rango
+mayor_rango:    xor r29, r29, r29
+                addu r29, r29, 255
+                br fin_filpixel
+menor_rango:    xor r29,r29,r29
+fin_filpixel:   or r30, r31, r31
+                POP (r31)
+                POP (r1)
+                jmp(r1)
+                
 Filtro:         PUSH(r1)
 	        PUSH(r31)
 		or r31,r30,r30
@@ -130,161 +300,50 @@ fin:	        or r30,r31,r31
                 POP(r31)
 		POP(r1)
 		jmp(r1)
-FiltRec:        jmp(r1)
-
-      org   2000
-IMG3: data 0x00000001, 0x00000001,0x00000001,0x00000000, 0x00000000,0x00000001,0x00000001, 0x00000001,0x00000001
-    
-      org   2048
-IMG4: data 0x00000001, 0x00000001,0x00000003,0x00000001, 0x00000001,0x00000003,0x00000001, 0x00000001,0x00000003
-                org 2100
-PPAL3:          LEA(r30, 0x8FF8)
-                LEA(r2, IMG3)
-                PUSH(r2)
-                LEA(r2, IMG4)
-                PUSH(r2)
-                bsr ValorPixel
-                POP(r1)
-                POP(r30)  
-                stop
-      
-ValorPixel:         ld r2, r30, r0; Subimagen
-                ld r3, r30, 4; Mfiltro
-                or r4,r0,r0; Acumulador
-                or r6, r0,r0; Contador
-                or r29, r0, r0
-bucle_vpixel:   ld.bu r20, r2, r0;
-                ld r21, r3, r0;
-                cmp r5, r6, 8
-                bb1 eq, r5, fin_b_vpixel
-                addu r2, r2, 1
-                addu r3, r3, 4
-                mulu r20, r20, r21
-                addu r4, r4, r20
-                addu r6, r6, 1
-                br bucle_vpixel
-fin_b_vpixel:   or r29, r4, r4
-                jmp(r1)
-      
-      org   3000
-IMG5: data 3, 3, 0x00000001, 0x00000001,0x00000001,0x00000000, 0x00000000,0x00000001,0x00000001, 0x00000001,0x00000001
-      
-      org 3100
-IMG6:data 0x00000001, 0x00000001,0x00000004,0x00000004, 0x00000000,0x00000001,0x00000001, 0x00000001,0x00000001
-      
-      org   3200
-i: data 1
-      
-      org 3248
-j: data 1
-      
-      org 3300
-PPAL4:          LEA(r30, 0x8FF0)
-                LEA(r2, IMG5)
-                PUSH(r2)
-		LEA(r2, IMG6)
-                addu r2,r2,1; ..i
-                PUSH(r2)
-                addu r3,r3,1; ..j
-                PUSH(r3)
-                bsr SubMatriz
-                POP(r1)
-                POP(r30)  
-                stop
+            
                 
-SubMatriz:      ld r20, r30, r0; Guardamos puntero matriz
-                ld r21, r30, 4; Guardamos puntero submatriz
-                ld r2, r20, r0; Filas de la imagen
-                subu r2, r2, 1
-                ld r3, r20, 4; Columna de la imagen
-                subu r3, r3, 1
-                ld r4, r30, 8; Fila de pixel
-                ld r6, r30, 12; Columna de pixel
-                cmp r5,r4,r0; Vemos que no sea borde
-                bb1 eq,r5,borde
-                cmp r5,r4,r2
-                bb1 eq,r5,borde
-                cmp r5,r6,r0
-                bb1 eq,r5,borde
-                cmp r5, r6,r3
-                bb1 eq,r5,borde; Ultima comprobación si es borde
-                addu r2, r2, 1; Obtenemos el numero de filas
-                addu r3, r3, 1; Obtenemos el numero de columnas
-                subu r4, r4, 1; Pasamos a saber el valor real de filas 
-                subu r6, r6, 1; Pasamos a saber el valor real de columnas 
-                addu r20, r20, r6; Apuntamos r20 a la columna que corresponda segun r6
-                mulu r7, r4, r3; Calculamos el salto en r7
-                addu r20, r20, r7; Nos colocamos en el primer elemento de la submatriz (donde vamos a insertar los elementos) en la matriz 
-                xor r8, r8, r8;Inicializamos el contador de elementos insertados (hasta 8)
-bucle_fila_subm:xor r9, r9, r9;Inicializamos el contador de elementos insertados por fila(hasta 2)
-bucle_col_subm: ld.bu r10, r21, r8; Cargamos el elemento de r21 en r10
-                st.b r10, r20, r9; Colocamos el elemento de r10 en la posicion de r20
-                addu r9, r9, 1; Añadimos 1 al contador
-                cmp r5, r9,2
-                bb1 ne, r5, bucle_col_subm; Vemos si hemos llegado a 2
-                cmp r5,r8, 8
-                bb1 eq, r5, fin_b_submatriz; Vemos si hemos llegado a 8
-                addu r8, r8, 1
-                subu r20, r20, 2; Colocamos r20 al inicio; Nos colocamos dos columnas a la izquierda
-                addu r20, r20, r3; Saltamos el el numero de columnas; Hacemos el salto de linea
-                br bucle_fila_subm
-borde:          ld r20, r30, 0; Volvemos al primer byte
-		        addu r2, r2, 1; Obtenemos el numero de filas
-                addu r3, r3, 1; Obtenemos el numero de columnas
-                addu r20, r20, 8
-                addu r20,r20,r6
-                mulu r4,r3,r4
-                addu r20,r20,r4
-                ld.bu r10,r20,r0
-                xor r2,r2,r2
-b_borde:        st.b r10, r21, r2
-                addu r2, r2, 1
-                cmp r5, r2, 8
-                bb1 ne, r2, b_borde; Comprobamos que hayamos llegado a 9
-fin_b_submatriz:jmp(r1)
-
-FilPixel:       PUSH (r1)
-                PUSH (r31)
-                or r30, r31, r31
-                subu r30, r30,12
-                ld r2, r31, 8; img
-                ld r3, r31, 12; i
-                ld r4, r31, 16; j
-                ld r6, r30, r0
-                PUSH (r4)
-                PUSH (r3)
-                PUSH (r6)
-                PUSH (r2)
-                bsr SubMatriz
-                addu r30, r30, 16; Eliminamos pila
-                or r6, r30, r30; Recargamos el ptro submatriz
-                ld r2, r31, 20; MFiltro
-                PUSH(r2)
-                PUSH(r6)
-                bsr ValorPixel
-                addu r30, r30, 8; Eliminamos pila
-                ld r2, r31, 20; MFiltro
-                xor r4, r4, r4
-                xor r6, r6, r6
-bucle_filpixel: ld r3, r2, r6; bucle para sumar elementos de FILTROS
-                addu r6, r6, 4
-                addu r4, r4, r3
-                cmp r5, r6, 32
-                bb1 ne, r5, bucle_filpixel
-                cmp r5, r4, 0
-                bb1 ne, r5, not_cero_filp
-                addu r4, r4, 1
-not_cero_filp:  divu r29, r29, r4
-                cmp r5, r29, 255
-                bb1 le, r5, enRango
-                xor r29, r29, r29
-                addu r29, r29, 255
-                bsr enRango
-                divu r29, r29, r4
-                cmp r5, r29, 0
-                bb1 ge, r5, enRango
-                xor r29, r29, r29
-enRango:        or r30, r31, r31
+FiltRec:        PUSH(r1)
+                PUSH(r31)
+                addu r31,r30,r0; creamos marco de pila(modo aaron)
+                subu r30,r30,8  ;Espacio para variables locales
+                ld r20,r31,8; ImagenIn
+                ld r21,r31,12; ImagenOut
+                ld r22,r31,16; MFiltro
+                PUSH(r22)
+                PUSH(r21)
+                PUSH(r20)
+                bsr Filtro
+                addu r30,r30,12
+                ld r20,r31,8
+                PUSH(r20)
+                PUSH(r21)
+                bsr Comp
+                addu r30,r30,8
+                ld r26,r31,20; Ncambios
+                cmp r5,r29,r26; Si es menor que la  Ncambios se acaba la recursión
+                bb1 ls,r5,fin_filrec
+                st r29,r31,-4; Almacenamos r29 en marco de pila
+                ld r18,r0,r0 ; NF
+                addu r18,r18,1; Aumentamos NF
+                st r18,r0,r0
+                or r19,r19,1; Oper
+                PUSH(r19)
+                bsr nFiltrados
+                addu r30,r30,4
+                cmp r5,r29,-1; Si el resultado es -1 terminamos la recursión
+                ld r29,r31,-4
+                bb1 eq,r5,fin_filrec
+                st r21,r31,-8
+                xor r25,r25,r25
+                ld r21,r31,-8
+                ld r22,r31,16
+                ld r26,r31,20
+                PUSH(r26)
+                PUSH(r22)
+                PUSH(r21)
+                bsr FiltRec
+                addu r30,r30,12
+fin_filrec:     or r30, r31, r31
                 POP (r31)
                 POP (r1)
                 jmp(r1)
