@@ -248,11 +248,11 @@ FilPixel:       PUSH(r1)
                 PUSH(r2)
                 bsr SubMatriz
                 addu r30, r30, 16; Deshacemos pila
-                b:ld r2, r31, 8; Imagen
+                ld r2, r31, 8; Imagen
                 PUSH(r25); MFIltro
                 PUSH(r28);SUbImg
-                pr2:bsr ValorPixel
-                pr1:addu r30, r30, 8; Deshacemos pila
+                bsr ValorPixel
+                addu r30, r30, 8; Deshacemos pila
                 ld r20, r31, 20
                 xor r3, r3, r3
                 addu r3, r3, 9; Contador
@@ -264,7 +264,7 @@ sumMFiltro:     ld r6, r20, r0
                 DBNZ(r3, sumMFiltro)
                 cmp r5, r4, 0
                 bb1 eq, r5, ceroMFiltro
-                divi:divs r29, r29, r4
+                divs r29, r29, r4
 ceroMFiltro:    cmp r5, r20, 0
                 bb1 ls, r5, set0
                 cmp r5, r29, 255
@@ -291,21 +291,22 @@ Filtro:         PUSH(r1)
 	            addu r21,r21,8
 	            xor r9,r9,r9; contador filas
 		        xor r10,r10,r10; contador columnas
-bucle_Fil:      cmp r5,r10,r3
-		        bb1 ne,r5,continua
-	 	        addu r9,r9,1
-		        xor r11,r11,r11
-continua:       cmp r5,r9,r2
-                bb1 eq,r5,fin
-		        PUSH(r20)
+bucle_Fil:      xor r11,r11,r11
+continua:       PUSH(r20)
 		        PUSH(r9)
 		        PUSH(r11)
 		        PUSH(r22)
 		        bsr FilPixel
 		        addu r30,r30,16
-		        st r29,r22,r0
-		        addu r22,r22,4
+		        st.b r29,r22,r0
+		        addu r22,r22,1
+                addu r9, r9, 1
 		        addu r11,r11,1
+                cmp r5,r9,r3
+                bb1 ne,r5,continua
+                addu r10, r10,1
+                cmp r5,r10,r2
+		        bb1 ls,r5,bucle_Fil
 fin:	        or r30,r31,r31
                 POP(r31)
                 POP(r1)
