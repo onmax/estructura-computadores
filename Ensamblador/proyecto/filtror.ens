@@ -107,7 +107,7 @@ PPAL3:          LEA(r30, 0x8FF8)
                 POP(r1)
                 POP(r30)  
                 stop
-      
+                
 ValorPixel:     ld r2, r30, r0; Subimagen
                 ld r3, r30, 4; Mfiltro
                 or r4,r0,r0; Acumulador
@@ -133,16 +133,19 @@ IMG5: data 5,5,0x04030201,0x08070605,0x0C0B0A09,0x100F0E0D,0x14131211,0x18171615
 
       org 3100
 IMG6:data 0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF
-      
+            org 10000
+IMG70:data 4,8,0,0,0x00003300,0,0,0,0,0
+            org 10100
+IMG71:data 0,0,0,0,0,0,0,0,0
       org 3300
 PPAL4:          LEA(r30, 0x8FF0)
-                or r2,r0,0
+                or r2,r0,1
                 PUSH(r2)
-                or r3,r0,0
+                or r3,r0,1
                 PUSH(r3)
-                LEA(r2, IMG6)
+                LEA(r2, IMG71)
                 PUSH(r2)
-		        LEA(r2, IMG5)
+		        LEA(r2, IMG70)
                 PUSH(r2)
                 bsr SubMatriz
                 addu r30, r30, 16 
@@ -191,9 +194,8 @@ borde:          mulu r17,r3,r4
                 addu r20,r20,r17
                 ld.bu r3,r20,r0
                 xor r2,r2,r2
-
-		xor r4, r4, r4
-		addu r4, r4, 9; Contador
+		        xor r4, r4, r4
+		        addu r4, r4, 9; Contador
 b_borde:        st.b r3, r21, r2
                 addu r2, r2, 1
                 DBNZ(r4,b_borde)
@@ -201,102 +203,100 @@ fin_b_submatriz:jmp(r1)
 
 
         org 4000
-IMG7:data 4,8,0,0,0x33000000,0,0,0,0,0
+IMG7:data 4,8,0,0,0x00003300,0,0,0,0,0
         org 4100
-MFILTRO2:data  1,1,1,1,0,1,1,1,1
+MFILTRO2:data 0,0,0,0,1,0,0,0,0
         org 4200
         
 PPAL5:          LEA(r30, 0x8FF0)
+                LEA(r2, MFILTRO2)
+                PUSH(r2)
                 or r2,r0,1
                 PUSH(r2)
                 or r3,r0,1
                 PUSH(r3)
                 LEA(r2, IMG7)
                 PUSH(r2)
-		        LEA(r2, MFILTRO2)
-                PUSH(r2)
                 bsr FilPixel
                 addu r30, r30, 16 
                 stop
-
-FilPixel:	PUSH(r1)
-		PUSH(r31)
-		or r31, r30, r30
-	        subu r30, r30, 12
-		ld r2, r31, 8; Imagen
-		ld r3, r31, -12; SubImg
-		ld r4, r31, 12; i
-		ld r6, r31, 16; j
-		PUSH(r6)
-		PUSH(r4)
-		PUSH(r3)
-		PUSH(r2)
-		bsr SubMatriz
-	        addu r30, r30, 16; Deshacemos pila
-		ld r2, r31, -12; SubImg
-		ld   r3, r31, 20; MFiltro
-		PUSH(r3); SubImg
-		PUSH(r2);Imagen
-                bsr ValorPixel
-	        addu r30, r30, 8; Deshacemos pila
-		ld  r20, r31, 20
-		xor r3, r3, r3
-	        addu r3, r3, 9; Contador
-	        xor r4, r4, r4; Resultado sumatorio
-sumMFiltro:	ld r6, r20, r0
-		add r4, r4, r6
-		addu r20, r20, 4
-		DBNZ(r3, sumMFiltro)
-		cmp r5, r4, 0
-		bb1 eq, r5, ceroMFiltro
-		divs r29, r29, r4
-ceroMFiltro:	cmp r5, r20, 0
-		bb1 lt r5, set0
-		cmp r5, r29, 255
-		bb1 gt, r5, set255
-set0:		or r29, r0, r0
-		br fin_FilPixel
-set255:		or r29, r0, 255
-fin_FilPixel:	or r30, r31, r31
-		POP(r31)
-		POP(r1)
-		jmp(r1)
+   
+FilPixel:       PUSH(r1)
+                PUSH(r31)
+                addu r31, r30, 0
+                subu r30, r30, 12
+                ld r2, r31, 8; Imagen
+                pr3:ld r25, r31, 20
+                ld r4, r31, 12; i
+                ld r6, r31, 16; j
+                or r28, r30, r30
+                PUSH(r6)
+                PUSH(r4)
+                PUSH(r28)
+                PUSH(r2)
+                bsr SubMatriz
+                addu r30, r30, 16; Deshacemos pila
+                b:ld r2, r31, 8; Imagen
+                PUSH(r25); MFIltro
+                PUSH(r28);SUbImg
+                pr2:bsr ValorPixel
+                pr1:addu r30, r30, 8; Deshacemos pila
+                ld r20, r31, 20
+                xor r3, r3, r3
+                addu r3, r3, 9; Contador
+                xor r4, r4, r4; Resultado sumatorio
+                xor r6,r6,r6
+sumMFiltro:     ld.bu r6, r20, r0
+                add r4, r4, r6
+                addu r20, r20, 4
+                DBNZ(r3, sumMFiltro)
+                cmp r5, r4, 0
+                bb1 eq, r5, ceroMFiltro
+                divs r29, r29, r4
+ceroMFiltro:    cmp r5, r20, 0
+                bb1 ls, r5, set0
+                cmp r5, r29, 255
+                bb1 gt, r5, set255
+set0:           or r29, r0, r0
+                br fin_FilPixel
+set255:         or r29, r0, 255
+fin_FilPixel:   or r30, r31, r31
+                POP(r31)
+                POP(r1)
+                jmp(r1)
         
 Filtro:         PUSH(r1)
-	        PUSH(r31)
-		or r31,r30,r30
-		ld r20,r31,8; Imagen
-	        ld r21,r31,12; Imagen Filtrada
-	        ld r22,r31,16; MFiltro
-		ld r2,r20,0; num filas
-	        ld r3,r20,4; num colum
-	        subu r2,r2,1
-		subu r3,r3,1
-	        addu r20,r20,8
-	        st r2,r21,0; Insertamos num filas en imFiltrada
-		st r3,r21,4; Insertamos num colum
-	        addu r21,r21,8
-	        xor r9,r9,r9; contador filas
-		xor r10,r10,r10; contador columnas
+	            PUSH(r31)
+		        or r31,r30,r30
+		        ld r20,r31,8; Imagen
+	            ld r21,r31,12; Imagen Filtrada
+	            ld r22,r31,16; MFiltro
+		        ld r2,r20,0; num filas
+	            ld r3,r20,4; num colum
+	            st r2, r22, 0
+                st r3, r22, 4
+	            addu r21,r21,8
+	            xor r9,r9,r9; contador filas
+		        xor r10,r10,r10; contador columnas
 bucle_Fil:      cmp r5,r10,r3
-		bb1 ne,r5,continua
-	 	addu r9,r9,1
-		xor r11,r11,r11
+		        bb1 ne,r5,continua
+	 	        addu r9,r9,1
+		        xor r11,r11,r11
 continua:       cmp r5,r9,r2
                 bb1 eq,r5,fin
-		PUSH(r20)
-		PUSH(r9)
-		PUSH(r11)
-		PUSH(r22)
-		bsr FilPixel
-		addu r30,r30,16
-		st r29,r22,r0
-		addu r22,r22,4
-		addu r11,r11,1
+		        PUSH(r20)
+		        PUSH(r9)
+		        PUSH(r11)
+		        PUSH(r22)
+		        bsr FilPixel
+		        addu r30,r30,16
+		        st r29,r22,r0
+		        addu r22,r22,4
+		        addu r11,r11,1
 fin:	        or r30,r31,r31
                 POP(r31)
-		POP(r1)
-		jmp(r1)
+                POP(r1)
+                jmp(r1)
 		
 
 FiltRec:        PUSH(r1)
@@ -331,7 +331,6 @@ FiltRec:        PUSH(r1)
                 ld r29,r31,-4
                 bb1 eq,r5,fin_filrec
                 st r21,r31,-8
-                xor r25,r25,r25
                 ld r21,r31,-8
                 ld r22,r31,16
                 ld r26,r31,20
