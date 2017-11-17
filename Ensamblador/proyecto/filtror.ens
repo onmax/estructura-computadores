@@ -277,41 +277,68 @@ fin_FilPixel:   or r30, r31, r31
                 POP(r31)
                 POP(r1)
                 jmp(r1)
-        
+                
+org 16000
+MFILTRO2000:data 0,0,0,0,0xFFFFFFFF,0,0,0,0
+        org 15000
+MFILTRO200:data 1,0,1,0,0,0,1,0,1
+       org 15048
+IMFILTRADA:data 0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5
+    org 15148
+IMG105:data 4, 6, 0x04030201, 0x02000605, 0x05030104,0x0C090603,0x0804120F,0x80402010
+
+org 15248
+PPAL7:          LEA(r30, 0x8FF4)   
+                LEA(r2, MFILTRO200)
+                PUSH(r2)
+                LEA(r2, IMFILTRADA)
+                PUSH(r2)
+                LEA(r2, IMG105)
+                PUSH(r2)
+                bsr Filtro
+                addu r30, r30, 12
+                stop
+
 Filtro:         PUSH(r1)
-	            PUSH(r31)
-		        or r31,r30,r30
-		        ld r20,r31,8; Imagen
-	            ld r21,r31,12; Imagen Filtrada
-	            ld r22,r31,16; MFiltro
-		        ld r2,r20,0; num filas
-	            ld r3,r20,4; num colum
-	            st r2, r22, 0
+                PUSH(r31)
+                or r31,r30,r30
+                ld r20,r31,8; Imagen
+                ld r21,r31,12; Imagen Filtrada
+                ld r22,r31,16; MFiltro
+                ld r2,r20,0; num filas
+                ld r3,r20,4; num colum
+                ;subu r2,r2,1
+                ;subu r3,r3,1
+                st r2, r22, 0
                 st r3, r22, 4
-	            addu r21,r21,8
-	            xor r9,r9,r9; contador filas
-		        xor r10,r10,r10; contador columnas
-bucle_Fil:      xor r11,r11,r11
-continua:       PUSH(r20)
-		        PUSH(r9)
-		        PUSH(r11)
-		        PUSH(r22)
-		        bsr FilPixel
-		        addu r30,r30,16
-		        st.b r29,r22,r0
-		        addu r22,r22,1
-                addu r9, r9, 1
-		        addu r11,r11,1
-                cmp r5,r9,r3
+                addu r21,r21,8
+                xor r9,r9,r9; contador filas
+                xor r10,r10,r10; contador columnas
+     bucle_Fil: cmp r5,r10,r3
                 bb1 ne,r5,continua
-                addu r10, r10,1
-                cmp r5,r10,r2
-		        bb1 ls,r5,bucle_Fil
-fin:	        or r30,r31,r31
+                addu r9,r9,1; Hemos llegado al final de la columna
+                xor r10,r10,r10
+continua:       PUSH(r21)
+                PUSH(r22)
+                PUSH(r10)
+                PUSH(r9)
+                PUSH(r20)
+                bsr FilPixel
+                POP(r20)
+                POP(r9)
+                POP(r10)
+                POP(r22)
+                POP(r21)
+                st.b r29,r21,r0
+                addu r21,r21,1
+                addu r10,r10,1
+                cmp r5,r9,r2
+                bb1 ls,r5,bucle_Fil
+fin:            or r30,r31,r31
                 POP(r31)
                 POP(r1)
                 jmp(r1)
-		
+
 
 FiltRec:        PUSH(r1)
                 PUSH(r31)
