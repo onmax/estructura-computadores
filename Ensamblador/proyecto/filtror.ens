@@ -285,7 +285,7 @@ MFILTRO200:data 1,0,1,0,0,0,1,0,1
        org 15048
 IMFILTRADA:data 0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5
     org 15148
-IMG105:data 4, 6, 0x04030201, 0x02000605, 0x05030104,0x0C090603,0x0804120F,0x80402010
+IMG105:data 4, 6, 0, 0x02000000, 0x05030104,0x00000103,0,0
 
 org 15248
 PPAL7:          LEA(r30, 0x8FF4)   
@@ -305,33 +305,33 @@ Filtro:         PUSH(r1)
                 ld r20,r31,8; Imagen
                 ld r21,r31,12; Imagen Filtrada
                 ld r22,r31,16; MFiltro
-                ld r2,r20,0; num filas
-                ld r3,r20,4; num colum
-                subu r2,r2,1
-                subu r3,r3,1
-                st r2, r22, 0
-                st r3, r22, 4
-                xor r9, r9, r9
-bfiltro_filas:  cmp r5, r9, r2
+                ld r13,r20,0; num filas
+                ld r15,r20,4; num colum
+				st r13, r21, 0
+                st r15, r21, 4
+				addu r21,r21,8
+                subu r13,r13,1
+                subu r15,r15,1
+                xor r11, r11, r11
+				subu r11,r11,1
+bfiltro_filas:  xor r12, r12, r12
+				addu r11, r11, 1
+                cmp r5, r11, r13
                 bb1 gt, r5, fin
-                xor r10, r10, r10
-bfiltro_columna:cmp r5, r10, r3
+bfiltro_columna:cmp r5, r12, r15
                 bb1 gt, r5, bfiltro_filas
-                PUSH(r21)
                 PUSH(r22)
-                PUSH(r3)
-                PUSH(r2)
+                PUSH(r12)
+                PUSH(r11)
                 PUSH(r20)
                 bsr FilPixel
                 POP(r20)
-                POP(r2)
-                POP(r3)
+                POP(r11)
+                POP(r12)
                 POP(r22)
-                POP(r21)
-                st.b r29, r21, 0
+   a:           st r29, r21, 0
                 addu r21, r21, 1
-                addu r9, r9, 1
-                addu r10, r10, 1
+                addu r12, r12, 1
                 br bfiltro_columna
 fin:            or r30,r31,r31
                 POP(r31)
