@@ -302,14 +302,14 @@ PPAL7:          LEA(r30, 0x8FF4)
 Filtro:         PUSH(r1)
                 PUSH(r31)
                 or r31,r30,r30
-                ld r20,r31,8; Imagen
-                ld r21,r31,12; Imagen Filtrada
+                ld r18,r31,8; Imagen
+                ld r27,r31,12; Imagen Filtrada
                 ld r22,r31,16; MFiltro
-                ld r13,r20,0; num filas
-                ld r15,r20,4; num colum
-				st r13, r21, 0
-                st r15, r21, 4
-				addu r21,r21,8
+                ld r13,r18,0; num filas
+                ld r15,r18,4; num colum
+				st r13, r27, 0
+                st r15, r27, 4
+				addu r27,r27,8
                 subu r13,r13,1
                 subu r15,r15,1
                 xor r11, r11, r11
@@ -323,14 +323,14 @@ bfiltro_columna:cmp r5, r12, r15
                 PUSH(r22)
                 PUSH(r12)
                 PUSH(r11)
-                PUSH(r20)
+                PUSH(r18)
                 bsr FilPixel
-                POP(r20)
+                POP(r18)
                 POP(r11)
                 POP(r12)
                 POP(r22)
-   a:           st r29, r21, 0
-                addu r21, r21, 1
+			a:	st.b r29, r27, 0
+                addu r27, r27, 1
                 addu r12, r12, 1
                 br bfiltro_columna
 fin:            or r30,r31,r31
