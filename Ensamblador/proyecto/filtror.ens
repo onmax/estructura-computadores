@@ -285,7 +285,7 @@ MFILTRO200:data 1,0,1,0,0,0,1,0,1
        org 15048
 IMFILTRADA:data 0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5
     org 15148
-IMG105:data 4, 6, 0, 0x02000000, 0x05030104,0x00000103,0,0
+IMG105:data 4, 6, 0x40302010, 0x20006050,0x50302040,0xC0906030,0x804021F0,0x80402010
 
 org 15248
 PPAL7:          LEA(r30, 0x8FF4)   
@@ -304,7 +304,7 @@ Filtro:         PUSH(r1)
                 or r31,r30,r30
                 ld r18,r31,8; Imagen
                 ld r27,r31,12; Imagen Filtrada
-                ld r22,r31,16; MFiltro
+                ld r23,r31,16; MFiltro
                 ld r13,r18,0; num filas
                 ld r15,r18,4; num colum
 				st r13, r27, 0
@@ -320,7 +320,7 @@ bfiltro_filas:  xor r12, r12, r12
                 bb1 gt, r5, fin
 bfiltro_columna:cmp r5, r12, r15
                 bb1 gt, r5, bfiltro_filas
-                PUSH(r22)
+                PUSH(r23)
                 PUSH(r12)
                 PUSH(r11)
                 PUSH(r18)
@@ -328,7 +328,7 @@ bfiltro_columna:cmp r5, r12, r15
                 POP(r18)
                 POP(r11)
                 POP(r12)
-                POP(r22)
+                POP(r23)
 			a:	st.b r29, r27, 0
                 addu r27, r27, 1
                 addu r12, r12, 1
