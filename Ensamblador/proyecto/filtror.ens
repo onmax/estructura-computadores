@@ -2,27 +2,27 @@ LEA:  MACRO (ra, eti)
       or   ra, r0, low(eti)
       or.u ra, ra, high(eti)
       ENDMACRO
-    
+
 PUSH: MACRO(ra)
       subu r30, r30, 4
       st ra, r30, r0
       ENDMACRO
-      
+
 POP:  MACRO(ra)
       ld ra, r30, 0
       addu r30, r30, 4
       ENDMACRO
-      
+
 DBNZ: MACRO(ra, eti)
       sub ra, ra, 1
       cmp r5, ra, 0
       bb0 2, r5, eti
       ENDMACRO
-    
-       org   0 
+
+       org   0
 NF:    data  11
         org 1000
-PPAL: LEA(r30, 0x8FFC)  
+PPAL: LEA(r30, 0x8FFC)
       ;Prueba para nFiltrados
       or r3, r0, r0
       addu r3, r3, 1;
@@ -47,12 +47,12 @@ nFiltrados:     or   r29, r0, r0; r29 <- 0
 once:   	addu r2,r2,1
 		st   r2,r0,r0
 		subu r29,r29,1
-		jmp(r1) 
+		jmp(r1)
 neg_nFiltrado:  subu r29,r29,1
                 jmp(r1)
 CERO:           st r0, r0, r0
                 jmp  (r1)
-    
+
 
       org   24
 IMG1: data 4,4,0x01000000,0,0,0
@@ -67,17 +67,17 @@ PPAL2: LEA(r30, 0x8FF8)
       bsr Comp
       addu r30, r30, 8
       stop
-    
-    
-    
-    
+
+
+
+
  Comp:          ld    r20, r30, r0; Puntero Imagen1
                 ld    r21, r30, 4; Puntero Imagen2
-                ld    r2, r20, r0; Número filas
-                ld    r3, r20, 4; Número columnas
+                ld    r2, r20, r0; Nï¿½mero filas
+                ld    r3, r20, 4; Nï¿½mero columnas
                 addu  r20, r20, 8; Apuntamos al primer elemento de imagen1
                 addu  r21, r21, 8; Apuntamos al primer elemento de imagen2
-                mulu  r2, r3, r2; Calculamos dimensión total
+                mulu  r2, r3, r2; Calculamos dimensiï¿½n total
                 xor r29, r29, r29
 b_comp:         ld.bu r3, r20, r0; Cargamos el byte de imagen1
                 ld.bu r4, r21, r0; Cargamos el byte de imagen2
@@ -90,7 +90,7 @@ b_comp:         ld.bu r3, r20, r0; Cargamos el byte de imagen1
 nPositivo:      addu r29, r29, r3
                 DBNZ(r2, b_comp)
                 jmp(r1)
-                
+
 
 
       org   2000
@@ -98,9 +98,9 @@ IMG3: data   0,0x00000055,0
       org   2048
 MFILTRO: data 0,0,0,0,1,0,0,0,0
                 org 2100
-                
+
       org   20000
-IMG300: data   0x44444444, 0x44443434, 0x00000088 
+IMG300: data   0x44444444, 0x44443434, 0x00000088
       org   20048
 MFILTRO55: data 1, 1, 1, 1, 0, 1, 1, 1, 1
                 org 2100
@@ -111,9 +111,9 @@ PPAL3:          LEA(r30, 0x8FF8)
                 PUSH(r2)
                 bsr ValorPixel
                 POP(r1)
-                POP(r30)  
+                POP(r30)
                 stop
-                
+
 ValorPixel:     ld r2, r30, r0; Subimagen
                 ld r3, r30, 4; Mfiltro
                 or r4,r0,r0; Acumulador
@@ -154,9 +154,9 @@ PPAL4:          LEA(r30, 0x8FF0)
 		        LEA(r2, IMG70)
                 PUSH(r2)
                 bsr SubMatriz
-                addu r30, r30, 16 
+                addu r30, r30, 16
                 stop
-                
+
 SubMatriz:      ld r20, r30, r0; Guardamos puntero matriz
                 ld r21, r30, 4; Guardamos puntero submatriz
                 ld r2, r20, r0; Filas de la imagen
@@ -170,11 +170,11 @@ SubMatriz:      ld r20, r30, r0; Guardamos puntero matriz
 		        addu r4, r4, 1
                 cmp r5,r4,r2
 		        subu r4, r4, 1
-                bb1 eq,r5,borde 
+                bb1 eq,r5,borde
                 addu r6, r6, 1
 		        cmp r5, r6,r3
 		        subu r6, r6, 1
-                bb1 eq,r5,borde; Ultima comprobación si es borde
+                bb1 eq,r5,borde; Ultima comprobaciï¿½n si es borde
 		        subu r4, r4, 1
 		        subu r6, r6, 1
 		        xor r8,r8,r8
@@ -216,10 +216,10 @@ MFILTRO2:data 0,0,0,0,1,0,0,0,0
 IMG10:data 4,8,0x44444444,0x44444444,0x33343444,0x44444444,0x44884444,0x44444444,0x44444444,0x44444444
         org 14100
 MFILTRO20:data 1,1,1,1,0,1,1,1,1
-        
+
         org 4200
-        
-        
+
+
 PPAL5:          LEA(r30, 0x8FF0)
                 LEA(r2, MFILTRO20)
                 PUSH(r2)
@@ -230,9 +230,9 @@ PPAL5:          LEA(r30, 0x8FF0)
                 LEA(r2, IMG10)
                 PUSH(r2)
                 bsr FilPixel
-                addu r30, r30, 16 
+                addu r30, r30, 16
                 stop
-   
+
 FilPixel:       PUSH(r1)
                 PUSH(r31)
                 addu r31, r30, 0
@@ -277,7 +277,7 @@ fin_FilPixel:   or r30, r31, r31
                 POP(r31)
                 POP(r1)
                 jmp(r1)
-                
+
 org 16000
 MFILTRO2000:data 0,0,0,0,0xFFFFFFFF,0,0,0,0
         org 15000
@@ -288,7 +288,7 @@ IMFILTRADA:data 0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A
 IMG105:data 4, 6, 0x40302010, 0x20006050,0x50302040,0xC0906030,0x804021F0,0x80402010
 
 org 15248
-PPAL7:          LEA(r30, 0x8FF4)   
+PPAL7:          LEA(r30, 0x8FF4)
                 LEA(r2, MFILTRO200)
                 PUSH(r2)
                 LEA(r2, IMFILTRADA)
@@ -338,6 +338,25 @@ fin:            or r30,r31,r31
                 POP(r1)
                 jmp(r1)
 
+org 17000
+ImagenIn: data 4,8,0xFF00FF00,0x00FF00FF,0xFF00FF00,0x00FF00FF,0xFF00FF00,0x00FF00FF,0xFF00FF00,0x00FF00FF
+org 17100
+ImagenOut: data 0,0,0,0,0,0,0,0,0,0
+org 17200
+FiltroRec: data 1,1,1,1,0,1,1,1,1
+
+PPAL8:  LEA(r30,0x8FF0)
+        LEA(r2,ImagenIn)
+        PUSH(r2)
+        LEA(r2,ImagenOut)
+        PUSH(r2)
+        LEA(r2,FiltroRec)
+        PUSH(r2)
+        xor r2,r2,r2
+        addu r2,r2,2
+        PUSH(r2)
+        bsr FiltRec
+        stop
 
 FiltRec:        PUSH(r1)
                 PUSH(r31)
@@ -357,7 +376,7 @@ FiltRec:        PUSH(r1)
                 bsr Comp
                 addu r30,r30,8
                 ld r26,r31,20; Ncambios
-                cmp r5,r29,r26; Si es menor que la  Ncambios se acaba la recursión
+                cmp r5,r29,r26; Si es menor que la  Ncambios se acaba la recursiï¿½n
                 bb1 ls,r5,fin_filrec
                 st r29,r31,-4; Almacenamos r29 en marco de pila
                 ld r18,r0,r0 ; NF
@@ -367,7 +386,7 @@ FiltRec:        PUSH(r1)
                 PUSH(r19)
                 bsr nFiltrados
                 addu r30,r30,4
-                cmp r5,r29,-1; Si el resultado es -1 terminamos la recursión
+                cmp r5,r29,-1; Si el resultado es -1 terminamos la recursiï¿½n
                 ld r29,r31,-4
                 bb1 eq,r5,fin_filrec
                 st r21,r31,-8
