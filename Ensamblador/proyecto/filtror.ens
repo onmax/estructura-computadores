@@ -38,16 +38,16 @@ nFiltrados:     or   r29, r0, r0; r29 <- 0
                 ld   r2, r0, r0; Cargamos nF
                 cmp  r5, r2, 12
                 bb1  ge, r5, neg_nFiltrado; Si el valor es mayor o igual a 12, devolvemos -1
-		cmp  r5, r2, 11
-		bb1  eq, r5, once
+		            cmp  r5, r2, 11
+		            bb1  eq, r5, once
                 addu r2, r2, 1; r2 <- r2+1
                 or   r29, r2, r2; r29 <- nF
                 st r29,r0,r0
                 jmp(r1)
-once:   	addu r2,r2,1
-		st   r2,r0,r0
-		subu r29,r29,1
-		jmp(r1)
+once:   	      addu r2,r2,1
+		            st   r2,r0,r0
+		            subu r29,r29,1
+		            jmp(r1)
 neg_nFiltrado:  subu r29,r29,1
                 jmp(r1)
 CERO:           st r0, r0, r0
@@ -238,7 +238,7 @@ FilPixel:       PUSH(r1)
                 addu r31, r30, 0
                 subu r30, r30, 12
                 ld r2, r31, 8; Imagen
-                pr3:ld r25, r31, 20
+                ld r25, r31, 20
                 ld r4, r31, 12; i
                 ld r6, r31, 16; j
                 or r28, r30, r30
@@ -346,37 +346,38 @@ org 17200
 FiltroRec: data 1,1,1,1,0,1,1,1,1
 
 PPAL8:  LEA(r30,0x8FF0)
-        LEA(r2,ImagenIn)
-        PUSH(r2)
-        LEA(r2,ImagenOut)
+        xor r2,r2,r2
+        addu r2,r2,2
         PUSH(r2)
         LEA(r2,FiltroRec)
         PUSH(r2)
-        xor r2,r2,r2
-        addu r2,r2,2
+        LEA(r2,ImagenOut)
+        PUSH(r2)
+        LEA(r2,ImagenIn)
         PUSH(r2)
         bsr FiltRec
         stop
 
 FiltRec:        PUSH(r1)
                 PUSH(r31)
-                addu r31,r30,r0; creamos marco de pila(modo aaron)
-                subu r30,r30,8  ;Espacio para variables locales
-                ld r20,r31,8; ImagenIn
-                ld r21,r31,12; ImagenOut
-                ld r22,r31,16; MFiltro
-                PUSH(r22)
-                PUSH(r21)
-                PUSH(r20)
+                or r31,r30,r0;
+                subu r30,r30,8
+                ld r7,r31,8; ImagenIn
+                ld r8,r31,12; ImagenOut
+                ld r9,r31,16; MFiltro
+                PUSH(r9)
+                PUSH(r8)
+                PUSH(r7)
                 bsr Filtro
-                addu r30,r30,12
-                ld r20,r31,8
-                PUSH(r20)
-                PUSH(r21)
+            p:  addu r30,r30,12
+                ld r7,r31,8; ImagenIn
+                ld r8,r31,12; ImagenOut
+                PUSH(r7)
+                PUSH(r8)
                 bsr Comp
-                addu r30,r30,8
+            e:  addu r30,r30,8
                 ld r26,r31,20; Ncambios
-                cmp r5,r29,r26; Si es menor que la  Ncambios se acaba la recursi�n
+                cmp r5,r29,r26; Si es menor que la  Ncambios se acaba la recursion
                 bb1 ls,r5,fin_filrec
                 st r29,r31,-4; Almacenamos r29 en marco de pila
                 ld r18,r0,r0 ; NF
@@ -385,7 +386,7 @@ FiltRec:        PUSH(r1)
                 or r19,r19,1; Oper
                 PUSH(r19)
                 bsr nFiltrados
-                addu r30,r30,4
+            b:  addu r30,r30,4
                 cmp r5,r29,-1; Si el resultado es -1 terminamos la recursi�n
                 ld r29,r31,-4
                 bb1 eq,r5,fin_filrec
