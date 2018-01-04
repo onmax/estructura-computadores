@@ -329,7 +329,7 @@ bfiltro_columna:cmp r5, r12, r15
                 POP(r11)
                 POP(r12)
                 POP(r23)
-			a:	st.b r29, r27, 0
+				st.b r29, r27, 0
                 addu r27, r27, 1
                 addu r12, r12, 1
                 br bfiltro_columna
@@ -369,36 +369,31 @@ FiltRec:        PUSH(r1)
                 PUSH(r8)
                 PUSH(r7)
                 bsr Filtro
-            p:  addu r30,r30,12
+              a:addu r30,r30,12
                 ld r7,r31,8; ImagenIn
-                ld r8,r31,12; ImagenOut
                 PUSH(r7)
-                PUSH(r8)
+                PUSH(r27);Imagen Filtrada
                 bsr Comp
-            e:  addu r30,r30,8
+              q:addu r30,r30,8
                 ld r26,r31,20; Ncambios
                 cmp r5,r29,r26; Si es menor que la  Ncambios se acaba la recursion
                 bb1 ls,r5,fin_filrec
-                st r29,r31,-4; Almacenamos r29 en marco de pila
+                or r26,r29,0; Valor retorno Comp(Siguiente valor de Ncambios)
                 ld r18,r0,r0 ; NF
                 addu r18,r18,1; Aumentamos NF
                 st r18,r0,r0
                 or r19,r19,1; Oper
                 PUSH(r19)
                 bsr nFiltrados
-            b:  addu r30,r30,4
-                cmp r5,r29,-1; Si el resultado es -1 terminamos la recursi�n
-                ld r29,r31,-4
-                bb1 eq,r5,fin_filrec
-                st r21,r31,-8
-                ld r21,r31,-8
-                ld r22,r31,16
-                ld r26,r31,20
-                PUSH(r26)
-                PUSH(r22)
-                PUSH(r21)
-                bsr FiltRec
-                addu r30,r30,12
+                addu r30,r30,4
+                cmp r5,r29,0; Si el resultado es -1 terminamos la recursi�n
+                bb1 ls,r5,fin_filrec
+                ld r8,r31,12; ImagenOut
+                ld r9,r31,16;MFIltro
+                PUSH(r26);Ncambios
+                PUSH(r9);Filtro
+                PUSH(r8);ImagenOut
+                PUSH(r27);ImagenIn
 fin_filrec:     or r30, r31, r31
                 POP (r31)
                 POP (r1)
