@@ -453,14 +453,19 @@ FiltRec1:       PUSH (r1)
                 bsr nFiltrados
                 addu r30, r30, 4; Se deshace solo el PUSH(r10)
                 cmp r5, r29, r0
-                bb1 lt, r5, fin_filrec1
-                ld r4, r7, 0
+                bb1 ge, r5, continua
+                POP(r29)
+                br fin_filrec1
+continua:       ld r4, r7, 0
                 ld r5, r7, 4
                 mulu r4, r4, r5
 		            clr r4, r4,2<0>
                 addu r4, r4, 8
-                POP(r29)
                 subu r30, r30, r4
+                ld r3, r7, 0
+                ld r5, r7, 4
+                st r3, r30, 0
+                st r5, r30, 4
                 or r22, r30, r0
                 PUSH(r29);Ncambios
                 PUSH(r16); Mfiltro
@@ -472,7 +477,3 @@ fin_filrec1:    or r30, r31, r31
                 POP(r31)
                 POP(r1)
                 jmp(r1)
-
-
-
-
