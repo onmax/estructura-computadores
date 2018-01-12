@@ -417,7 +417,10 @@ bucle_filrec:   ld.b r10, r24, r0
                 PUSH(r22)
                 PUSH(r24)
                 bsr FiltRec
-fin_filrec:     or r30, r31, r0
+fin_filrec:     ld r5, r0, r0
+                subu r5, r5, 1
+                st r5, r0, r0
+		or r30, r31, r0
                 POP(r31)
                 POP(r1)
                 jmp(r1)
