@@ -463,7 +463,7 @@ FiltRec1:       PUSH (r1)
                 addu r30, r30, r4
                 xor r10, r10, r10
                 or r10, r30, r0
-                PUSH(r26);Ncambios
+                PUSH(r29);Ncambios
                 PUSH(r16); Mfiltro
                 PUSH(r10)
                 PUSH(r24)
