@@ -431,19 +431,17 @@ fin_filrec:     POP(r29)
 FiltRec1:       PUSH (r1)
                 PUSH(r31)
                 or r31, r30, r0
-                ld r2, r31, 8; ImagenIn
-                ld r3, r31, 12; ImagenOut
-                ld r4, r31, 16;MFiltro
-                ld r6, r31, 20;Ncambios
+                ld r7, r31, 8; ImagenIn
+                ld r24, r31, 12; ImagenOut
+                ld r16, r31, 16;MFiltro
+                ld r26, r31, 20;Ncambios
                 PUSH(r4)
-                PUSH(r3)
-                PUSH(r2)
+                PUSH(r24)
+                PUSH(r7)
                 bsr Filtro
                 addu r30, r30, 12; Deshacemos pila
-                ld r2, r31, 8; ImagenIn
-                ld r3, r31, 12; ImagenOut
-                PUSH(r2)
-                PUSH(r29)
+                PUSH(r7)
+                PUSH(r24)
                 bsr Comp
                 addu r30, r30, 8
                 cmp r5, r29, r26
@@ -454,20 +452,27 @@ FiltRec1:       PUSH (r1)
                 PUSH(r10)
                 bsr nFiltrados
                 addu r30, r30, 4; Se deshace solo el PUSH(r10)
-                cpm r5, r29, r0
+                cmp r5, r29, r0
                 bb1 lt, r5, fin_filrec1
+                ld r4, r7, 0
+                ld r5, r7, 4
+                mulu r4, r4, r5
+                addu r4, r4, 4
+                clr r4, r4,2<0>
                 POP(r29)
-                ld r3, r31, 12; ImagenOut
-                ld r4, r31, 16;MFiltro
-                ld r6, r31, 20;Ncambios
-                PUSH(r6)
-                PUSH(r4)
-                PUSH(r3)
-                PUSH(r29)
+                addu r30, r30, r4
+                xor r10, r10, r10
+                or r30, r30, r10
+                PUSH(r26);Ncambios
+                PUSH(r16); Mfiltro
+                PUSH(r24)
+                PUSH(r10)
                 bsr FiltRec1
                 addu r30, r30, 24
 fin_filrec1:    or r30, r31, r31
                 POP(r31)
                 POP(r1)
                 jmp(r1)
+
+
 
