@@ -307,15 +307,15 @@ Filtro:         PUSH(r1)
                 ld r23,r31,16; MFiltro
                 ld r13,r18,0; num filas
                 ld r15,r18,4; num colum
-				st r13, r27, 0
+				        st r13, r27, 0
                 st r15, r27, 4
-				addu r27,r27,8
+				        addu r27,r27,8
                 subu r13,r13,1
                 subu r15,r15,1
                 xor r11, r11, r11
-				subu r11,r11,1
+				        subu r11,r11,1
 bfiltro_filas:  xor r12, r12, r12
-				addu r11, r11, 1
+				        addu r11, r11, 1
                 cmp r5, r11, r13
                 bb1 gt, r5, fin
 bfiltro_columna:cmp r5, r12, r15
@@ -329,7 +329,7 @@ bfiltro_columna:cmp r5, r12, r15
                 POP(r11)
                 POP(r12)
                 POP(r23)
-				st.b r29, r27, 0
+				        st.b r29, r27, 0
                 addu r27, r27, 1
                 addu r12, r12, 1
                 br bfiltro_columna
@@ -363,16 +363,17 @@ FiltRec:        PUSH(r1)
                 or r31,r30,r0;
                 subu r30,r30,8
                 ld r7,r31,8; ImagenIn
-                ld r8,r31,12; ImagenOut
+                ld r24,r31,12; ImagenOut
                 ld r9,r31,16; MFiltro
                 PUSH(r9)
-                PUSH(r8)
+                PUSH(r24)
                 PUSH(r7)
                 bsr Filtro
+          fila:or r10,r24,0
+                ld r16,r24,0
               a:addu r30,r30,12
-                ld r7,r31,8; ImagenIn
                 PUSH(r7)
-                PUSH(r27);Imagen Filtrada
+                PUSH(r10);Imagen Filtrada
                 bsr Comp
               q:addu r30,r30,8
                 ld r26,r31,20; Ncambios
@@ -386,14 +387,15 @@ FiltRec:        PUSH(r1)
                 PUSH(r19)
                 bsr nFiltrados
                 addu r30,r30,4
-                cmp r5,r29,0; Si el resultado es -1 terminamos la recursi�n
-                bb1 ls,r5,fin_filrec
-                ld r8,r31,12; ImagenOut
+                cmp r5,r29,-1; Si el resultado es -1 terminamos la recursi�n
+                bb1 eq,r5,fin_filrec
                 ld r9,r31,16;MFIltro
                 PUSH(r26);Ncambios
                 PUSH(r9);Filtro
-                PUSH(r8);ImagenOut
+                PUSH(r24);ImagenOut
                 PUSH(r27);ImagenIn
+           ar:  bsr FiltRec
+                addu r30,r30,16
 fin_filrec:     or r30, r31, r31
                 POP (r31)
                 POP (r1)
