@@ -369,11 +369,12 @@ FiltRec:        PUSH(r1)
                 PUSH(r24)
                 PUSH(r7)
                 bsr Filtro
-              a:addu r30,r30,12
+                addu r30,r30,12
+               ld r7,r31,8
                 PUSH(r7)
                 PUSH(r24);Imagen Filtrada
                 bsr Comp
-              q:addu r30,r30,8
+                addu r30,r30,8
                 ld r26,r31,20; Ncambios
                 cmp r5,r29,r26; Si es menor que la  Ncambios se acaba la recursion
                 bb1 ls,r5,fin_filrec
@@ -384,14 +385,14 @@ FiltRec:        PUSH(r1)
                 or r19,r19,1; Oper
                 PUSH(r19)
                 bsr nFiltrados
-                addu r30,r30,4
+             a:addu r30,r30,4
                 cmp r5,r29,-1; Si el resultado es -1 terminamos la recursi�n
                 bb1 eq,r5,fin_filrec
                 ld r9,r31,16;MFIltro
                 or r10,r24,0
                 ld r24,r31,12
                 POP(r29)
-                PUSH(r26);Ncambios
+                PUSH(r29);Ncambios
                 PUSH(r9);Filtro
                 PUSH(r24);ImagenOut
                 PUSH(r10);ImagenIn
@@ -402,6 +403,7 @@ fin_filrec:     POP(r29)
                 POP (r31)
                 POP (r1)
                 jmp(r1)
+
 
 		
 FiltRec1:       PUSH (r1)
