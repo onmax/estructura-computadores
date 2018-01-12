@@ -359,7 +359,8 @@ PPAL8:  LEA(r30,0x8FF0)
         bsr FiltRec
         stop
 
-FiltRec:        PUSH (r1)
+
+FiltRec1:       PUSH (r1)
                 PUSH(r31)
                 or r31, r30, r0
                 ld r7, r31, 8; ImagenIn
@@ -376,7 +377,7 @@ FiltRec:        PUSH (r1)
                 bsr Comp
                 addu r30, r30, 8
                 cmp r5, r29, r26
-                bb1 lt, r5, fin_filrec
+                bb1 lt, r5, fin_filrec1
                 PUSH(r29)
                 xor r10, r10, r10
                 addu r10, r10, 1
@@ -386,7 +387,7 @@ FiltRec:        PUSH (r1)
                 cmp r5, r29, r0
                 bb1 ge, r5, continua
                 POP(r29)
-                br fin_filrec
+                br fin_filrec1
 continua:       ld r4, r7, 0
                 ld r5, r7, 4
                 mulu r4, r4, r5; Numero de elementos
@@ -412,15 +413,11 @@ bucle_filrec:   ld.b r10, r24, r0
                 bb1 gt, r5, bucle_filrec
                 or r22, r30, 0; Recuperamos ptr de imgout
                 ld r24, r31, 12; ImagenOut
-                PUSH(r29);Ncambios
                 PUSH(r16); Mfiltro
                 PUSH(r22)
                 PUSH(r24)
-                bsr FiltRec
-fin_filrec:     ld r5, r0, r0
-                subu r5, r5, 1
-                st r5, r0, r0
-		or r30, r31, r0
+                bsr FiltRec1
+fin_filrec1:    or r30, r31, r0
                 POP(r31)
                 POP(r1)
                 jmp(r1)
