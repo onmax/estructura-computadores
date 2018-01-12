@@ -435,7 +435,7 @@ FiltRec1:       PUSH (r1)
                 ld r24, r31, 12; ImagenOut
                 ld r16, r31, 16;MFiltro
                 ld r26, r31, 20;Ncambios
-                PUSH(r4)
+                PUSH(r16)
                 PUSH(r24)
                 PUSH(r7)
                 bsr Filtro
@@ -473,6 +473,7 @@ fin_filrec1:    or r30, r31, r31
                 POP(r31)
                 POP(r1)
                 jmp(r1)
+
 
 
 
