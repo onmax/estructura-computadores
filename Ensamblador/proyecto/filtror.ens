@@ -458,22 +458,35 @@ FiltRec1:       PUSH (r1)
                 br fin_filrec1
 continua:       ld r4, r7, 0
                 ld r5, r7, 4
-                mulu r4, r4, r5
+                mulu r4, r4, r5; Numero de elementos
 		            clr r4, r4,2<0>
-                addu r4, r4, 8
+                addu r4, r4, 12
                 subu r30, r30, r4
                 ld r3, r7, 0
                 ld r5, r7, 4
                 st r3, r30, 0
                 st r5, r30, 4
-                or r22, r30, r0
+                ;Cargamos r4, r5 => Filas y columnas
+                ld r4, r7, 0
+                ld r5, r7, 4
+                mulu r4, r4, r5; Numero de elementos
+                or r22, r30, 8
+                or r24, r24, 8; Apuntamos a elems ImgOut
+bucle_filrec:   ld.b r10, r24, r0
+                st.b r10, r22, r0
+                addu r22, r22, 1;Sumamos 1 a los ptr
+                addu r24, r24, 1;Sumamos 1 a los ptr
+                subu r4, r4, 1; restamos 1 a contador
+                cmp r5, r4, 0
+                bb1 gt, r5, bucle_filrec
+                or r22, r30, 0; Recuperamos ptr de imgout
+                ld r24, r31, 12; ImagenOut
                 PUSH(r29);Ncambios
                 PUSH(r16); Mfiltro
                 PUSH(r22)
                 PUSH(r24)
                 bsr FiltRec1
-                addu r30, r30, 24
-fin_filrec1:    or r30, r31, r31
+fin_filrec1:    or r30, r31, r0
                 POP(r31)
                 POP(r1)
                 jmp(r1)
