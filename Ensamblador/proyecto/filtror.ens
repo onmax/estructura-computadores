@@ -460,7 +460,7 @@ FiltRec1:       PUSH (r1)
 		clr r4, r4,2<0>
                 addu r4, r4, 4
                 POP(r29)
-                addu r30, r30, r4
+                subu r30, r30, r4
                 xor r10, r10, r10
                 or r10, r30, r0
                 PUSH(r29);Ncambios
