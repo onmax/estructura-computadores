@@ -369,17 +369,15 @@ FiltRec:        PUSH(r1)
                 PUSH(r24)
                 PUSH(r7)
                 bsr Filtro
-          fila:or r10,r24,0
-                ld r16,r24,0
               a:addu r30,r30,12
                 PUSH(r7)
-                PUSH(r10);Imagen Filtrada
+                PUSH(r24);Imagen Filtrada
                 bsr Comp
               q:addu r30,r30,8
                 ld r26,r31,20; Ncambios
                 cmp r5,r29,r26; Si es menor que la  Ncambios se acaba la recursion
                 bb1 ls,r5,fin_filrec
-                or r26,r29,0; Valor retorno Comp(Siguiente valor de Ncambios)
+                PUSH(r29); Valor retorno Comp(Siguiente valor de Ncambios)
                 ld r18,r0,r0 ; NF
                 addu r18,r18,1; Aumentamos NF
                 st r18,r0,r0
@@ -390,17 +388,21 @@ FiltRec:        PUSH(r1)
                 cmp r5,r29,-1; Si el resultado es -1 terminamos la recursi�n
                 bb1 eq,r5,fin_filrec
                 ld r9,r31,16;MFIltro
+                or r10,r24,0
+                ld r24,r31,12
+                POP(r29)
                 PUSH(r26);Ncambios
                 PUSH(r9);Filtro
                 PUSH(r24);ImagenOut
-                PUSH(r27);ImagenIn
+                PUSH(r10);ImagenIn
            ar:  bsr FiltRec
                 addu r30,r30,16
-fin_filrec:     or r30, r31, r31
+fin_filrec:     POP(r29)
+                or r30, r31, r31
                 POP (r31)
                 POP (r1)
                 jmp(r1)
-		
+
 		
 FiltRec1:       PUSH (r1)
                 PUSH(r31)
