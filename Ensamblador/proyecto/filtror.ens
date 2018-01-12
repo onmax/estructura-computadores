@@ -357,6 +357,28 @@ PPAL8:  LEA(r30,0x8FF0)
         PUSH(r2)
         bsr FiltRec
         stop
+	
+org 0
+ponerA: data 0
+org 17000
+ImagenIn: data 4,8,0xFF00FF00,0x00FF00FF,0xFF00FF00,0x00FF00FF,0xFF00FF00,0x00FF00FF,0xFF00FF00,0x00FF00FF
+org 17100
+ImagenOut: data 0,0,0,0,0,0,0,0,0,0
+org 17200
+FiltroRec: data 1,1,1,1,0,1,1,1,1
+
+PPAL8:  LEA(r30,0x8FF0)
+        LEA(r2, ponerA)
+        PUSH(r2)
+        LEA(r2,FiltroRec)
+        PUSH(r2)
+        LEA(r2,ImagenOut)
+        PUSH(r2)
+        LEA(r2,ImagenIn)
+        PUSH(r2)
+        xor r16, r16, r16
+        bsr FiltRec1
+        stop
 
 FiltRec:        PUSH(r1)
                 PUSH(r31)
