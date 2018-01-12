@@ -465,8 +465,8 @@ FiltRec1:       PUSH (r1)
                 or r30, r30, r10
                 PUSH(r26);Ncambios
                 PUSH(r16); Mfiltro
-                PUSH(r24)
                 PUSH(r10)
+                PUSH(r24)
                 bsr FiltRec1
                 addu r30, r30, 24
 fin_filrec1:    or r30, r31, r31
