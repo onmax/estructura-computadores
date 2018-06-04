@@ -72,11 +72,11 @@ PPAL2: LEA(r30, 0x8FF8)
 
  Comp:          ld    r20, r30, r0; Puntero Imagen1
                 ld    r21, r30, 4; Puntero Imagen2
-                ld    r2, r20, r0; N�mero filas
-                ld    r3, r20, 4; N�mero columnas
+                ld    r2, r20, r0; N mero filas
+                ld    r3, r20, 4; N mero columnas
                 addu  r20, r20, 8; Apuntamos al primer elemento de imagen1
                 addu  r21, r21, 8; Apuntamos al primer elemento de imagen2
-                mulu  r2, r3, r2; Calculamos dimensi�n total
+                mulu  r2, r3, r2; Calculamos dimensi n total
                 xor r29, r29, r29
 b_comp:         ld.bu r3, r20, r0; Cargamos el byte de imagen1
                 ld.bu r4, r21, r0; Cargamos el byte de imagen2
@@ -173,7 +173,7 @@ SubMatriz:      ld r20, r30, r0; Guardamos puntero matriz
                 addu r6, r6, 1
 		        cmp r5, r6,r3
 		        subu r6, r6, 1
-                bb1 eq,r5,borde; Ultima comprobaci�n si es borde
+                bb1 eq,r5,borde; Ultima comprobaci n si es borde
 		        subu r4, r4, 1
 		        subu r6, r6, 1
 		        xor r8,r8,r8
@@ -360,7 +360,7 @@ PPAL8:  LEA(r30,0x8FF0)
         stop
 
 
-FiltRec1:       PUSH (r1)
+FiltRec:        PUSH (r1)
                 PUSH(r31)
                 or r31, r30, r0
                 ld r7, r31, 8; ImagenIn
@@ -416,7 +416,7 @@ bucle_filrec:   ld.b r10, r24, r0
                 PUSH(r16); Mfiltro
                 PUSH(r22)
                 PUSH(r24)
-                bsr FiltRec1
+                bsr FiltRec
 fin_filrec1:    or r30, r31, r0
                 POP(r31)
                 POP(r1)
