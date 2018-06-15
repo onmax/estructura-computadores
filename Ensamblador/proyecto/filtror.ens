@@ -30,7 +30,7 @@ PPAL: LEA(r30, 0x8FFC)
       POP(r3)
       stop
 
-nFiltrados:     or   r29, r0, r0; r29 <- 0
+nFiltrados:     or   r29, r0, r0; r29 <- r0
                 ld   r2, r30, r0
                 cmp  r5, r2, r0
                 bb1  eq, r5, CERO; Si el oper es cero, devolvemos en r29 cero
@@ -53,19 +53,6 @@ CERO:           st r0, r0, r0
                 jmp  (r1)
 
 
-      org   24
-IMG1: data 4,4,0x01000000,0,0,0
-      org   100
-IMG2: data  4,4,0,0x01000000,0,0
-      org 200
-PPAL2: LEA(r30, 0x8FF8)
-      LEA(r2, IMG1)
-      PUSH(r2)
-      LEA(r2, IMG2)
-      PUSH(r2)
-      bsr Comp
-      addu r30, r30, 8
-      stop
 
 
 
@@ -277,26 +264,7 @@ fin_FilPixel:   or r30, r31, r31
                 POP(r1)
                 jmp(r1)
 
-org 16000
-MFILTRO2000:data 0,0,0,0,0xFFFFFFFF,0,0,0,0
-        org 15000
-MFILTRO200:data 1,1,1,1,0,1,1,1,1
-       org 15048
-IMFILTRADA:data 0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5,0xA5A5A5A5
-    org 15148
-IMG105:data 4, 8, 0xFF00FF00,0x00FF00FF,0xF9FBF300,0x00F3FBF9,0xF9FBF300,0x00F3FBF9,0xFF00FF00,0x00FF00FF
 
-org 15248
-PPAL7:          LEA(r30, 0x8FF4)
-                LEA(r2, MFILTRO200)
-                PUSH(r2)
-                LEA(r2, IMFILTRADA)
-                PUSH(r2)
-                LEA(r2, IMG105)
-                PUSH(r2)
-                bsr Filtro
-                addu r30, r30, 12
-                stop
 
 Filtro:         PUSH(r1)
                 PUSH(r31)
@@ -371,12 +339,15 @@ FiltRec:        PUSH (r1)
                 PUSH(r24)
                 PUSH(r7)
                 bsr Filtro
-                addu r30, r30, 12; Deshacemos pila
+                POP(r7)
+                POP(r24)
+                POP(r16)
                 PUSH(r7)
-                PUSH(r24)
+a:              PUSH(r24)
                 bsr Comp
-                addu r30, r30, 8
+b:              addu r30, r30, 8
                 cmp r5, r29, r26
+                or r26,r29,0
                 bb1 lt, r5, fin_filrec1
                 PUSH(r29)
                 xor r10, r10, r10
@@ -384,24 +355,23 @@ FiltRec:        PUSH (r1)
                 PUSH(r10)
                 bsr nFiltrados
                 addu r30, r30, 4; Se deshace solo el PUSH(r10)
-                cmp r5, r29, r0
+c:                cmp r5, r29, r0
                 bb1 ge, r5, continua
-                POP(r29)
+                or r29,r27,0
                 br fin_filrec1
-continua:       ld r4, r7, 0
+continua:       ld r7, r31, 8; ImagenIn
+                ld r4, r7, 0
                 ld r5, r7, 4
                 mulu r4, r4, r5; Numero de elementos
+                addu r4,r4,4
 		            clr r4, r4,2<0>
-                addu r4, r4, 12
-                subu r30, r30, r4
+                addu r4, r4,8
+                subu r30, r30,r4
                 ld r3, r7, 0
                 ld r5, r7, 4
                 st r3, r30, 0
                 st r5, r30, 4
-                ;Cargamos r4, r5 => Filas y columnas
-                ld r4, r7, 0
-                ld r5, r7, 4
-                mulu r4, r4, r5; Numero de elementos
+                mulu r4, r3, r5; Numero de elementos
                 or r22, r30, 8
                 or r24, r24, 8; Apuntamos a elems ImgOut
 bucle_filrec:   ld.b r10, r24, r0
@@ -412,7 +382,8 @@ bucle_filrec:   ld.b r10, r24, r0
                 cmp r5, r4, 0
                 bb1 gt, r5, bucle_filrec
                 or r22, r30, 0; Recuperamos ptr de imgout
-                ld r24, r31, 12; ImagenOut
+d:              ld r24, r31, 8; ImagenOut
+                PUSH(r26)
                 PUSH(r16); Mfiltro
                 PUSH(r22)
                 PUSH(r24)
