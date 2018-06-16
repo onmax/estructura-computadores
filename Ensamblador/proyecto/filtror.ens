@@ -331,63 +331,92 @@ PPAL8:  LEA(r30,0x8FF0)
 FiltRec:        PUSH (r1)
                 PUSH(r31)
                 or r31, r30, r0
-                ld r7, r31, 8; ImagenIn
-                ld r24, r31, 12; ImagenOut
-                ld r16, r31, 16;MFiltro
-                ld r26, r31, 20;Ncambios
+                ld r7, r31, 8             ; ImagenIn
+                ld r24, r31, 12           ; ImagenOut
+                ld r16, r31, 16           ; MFiltro
+                ld r26, r31, 20           ; Ncambios
+
+                ;Paso 1
                 PUSH(r16)
                 PUSH(r24)
                 PUSH(r7)
                 bsr Filtro
-                POP(r7)
-                POP(r24)
-                POP(r16)
+                addu r30, r30, 12          ; Deshacemos la pila
+
+
+                ; Paso 2
                 PUSH(r7)
-a:              PUSH(r24)
-                bsr Comp
-b:              addu r30, r30, 8
-                cmp r5, r29, r26
-                or r26,r29,0
-                bb1 lt, r5, fin_filrec1
+                PUSH(r24)
+                bsr Comp                  ; Comparamos las imagenes
+                addu r30, r30, 8          ; Deshacemos la pila
+
+                cmp r5, r29, r26          ; Comparamos r29 con r26
+                or r26,r29,0              ; Llevamos el valor de r29 a r26
+                bb1 lt, r5, fin_filrec1   ; Si r29 < r26 terminamos
+                
                 xor r10, r10, r10
                 addu r10, r10, 1
                 PUSH(r10)
                 bsr nFiltrados
-                addu r30, r30, 4; Se deshace solo el PUSH(r10)
-c:              cmp r5, r29, r0
-                bb1 ge, r5, continua
+                addu r30, r30, 4          ; Se deshace solo el PUSH(r10)
+                cmp r5, r29, r0
+                bb1 ge, r5, continua      ; Si el resultado de nFiltrados (r29) no es negativo
                 or r29,r26,0
                 br fin_filrec1
-continua:       ld r7, r31, 8; ImagenIn
+                
+                ; Paso 4
+continua:       ld r7, r31, 8             ; ImagenIn
                 ld r4, r7, 0
                 ld r5, r7, 4
-                mulu r4, r4, r5; Numero de elementos
-                addu r4,r4,4
-		            clr r4, r4,2<0>
-                addu r4, r4,8
-                subu r30, r30,r4
+                mulu r4, r4, r5           ; Numero de elementos de la matriz
+
+
+                ;Codigo de Raul
+                ;addu r4, r4, 4      
+	          ;clr r4, r4,2<0>
+                ;addu r4, r4,8
+
+
+                ;Codigo de Max
+                mulu r19, r4, r5          ; Numero de elementos de la matriz
+                mak r10,r19,2<0>          ; Obtnemos los ultimos 2 bits y lo guardamos en r10
+                cmp r5,r10,r0
+                bb1 eq,r5,multiplo4       ; Comprobamos si es multiplo de 4
+                clr r4,r4,2<0>            ; Cogemos el numero multiplo de 4 menor mas cercano     
+                addu r4,r4,12             ; Sumamos 12
+                br res_espacio
+ multiplo4:     addu r4,r4,8              ; Sumamos 8
+                ;Fin codigo de Max
+
+
+
+ res_espacio:   subu r30, r30,r4
                 ld r3, r24, 0
                 ld r5, r24, 4
                 st r3, r30, 0
                 st r5, r30, 4
-                mulu r4, r3, r5; Numero de elementos
+                ;mulu r4, r3, r5           ; Numero de elementos
                 addu r22, r30, 8
-                addu r24, r24, 8; Apuntamos a elems ImgOut
+                addu r24, r24, 8          ; Apuntamos a elems ImgOut
 bucle_filrec:   ld.b r10, r24, r0
                 st.b r10, r22, r0
-                addu r22, r22, 1;Sumamos 1 a los ptr
-                addu r24, r24, 1;Sumamos 1 a los ptr
-                subu r4, r4, 1; restamos 1 a contador
+                addu r22, r22, 1          ;Sumamos 1 a los ptr
+                addu r24, r24, 1          ;Sumamos 1 a los ptr
+                subu r4, r4, 1            ; restamos 1 a contador
                 cmp r5, r4, 0
                 bb1 gt, r5, bucle_filrec
-                or r22, r30, 0; Recuperamos ptr de imgout
-d:              ld r24, r31, 12; ImagenOut
+
+                ; Paso 5
+                or r22, r30, 0            ; Recuperamos ptr de imgout
+                ld r24, r31, 12           ; ImagenOut
                 ld r26,r31,20
                 PUSH(r26)
                 PUSH(r16); Mfiltro
                 PUSH(r24)
                 PUSH(r22)
                 bsr FiltRec
+
+                ; Paso 6
 fin_filrec1:    or r30, r31, r0
                 POP(r31)
                 POP(r1)
