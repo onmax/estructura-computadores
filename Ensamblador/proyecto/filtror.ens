@@ -349,15 +349,14 @@ b:              addu r30, r30, 8
                 cmp r5, r29, r26
                 or r26,r29,0
                 bb1 lt, r5, fin_filrec1
-                PUSH(r29)
                 xor r10, r10, r10
                 addu r10, r10, 1
                 PUSH(r10)
                 bsr nFiltrados
                 addu r30, r30, 4; Se deshace solo el PUSH(r10)
-c:                cmp r5, r29, r0
+c:              cmp r5, r29, r0
                 bb1 ge, r5, continua
-                or r29,r27,0
+                or r29,r26,0
                 br fin_filrec1
 continua:       ld r7, r31, 8; ImagenIn
                 ld r4, r7, 0
@@ -367,13 +366,13 @@ continua:       ld r7, r31, 8; ImagenIn
 		            clr r4, r4,2<0>
                 addu r4, r4,8
                 subu r30, r30,r4
-                ld r3, r7, 0
-                ld r5, r7, 4
+                ld r3, r24, 0
+                ld r5, r24, 4
                 st r3, r30, 0
                 st r5, r30, 4
                 mulu r4, r3, r5; Numero de elementos
-                or r22, r30, 8
-                or r24, r24, 8; Apuntamos a elems ImgOut
+                addu r22, r30, 8
+                addu r24, r24, 8; Apuntamos a elems ImgOut
 bucle_filrec:   ld.b r10, r24, r0
                 st.b r10, r22, r0
                 addu r22, r22, 1;Sumamos 1 a los ptr
@@ -382,11 +381,12 @@ bucle_filrec:   ld.b r10, r24, r0
                 cmp r5, r4, 0
                 bb1 gt, r5, bucle_filrec
                 or r22, r30, 0; Recuperamos ptr de imgout
-d:              ld r24, r31, 8; ImagenOut
+d:              ld r24, r31, 12; ImagenOut
+                ld r26,r31,20
                 PUSH(r26)
                 PUSH(r16); Mfiltro
-                PUSH(r22)
                 PUSH(r24)
+                PUSH(r22)
                 bsr FiltRec
 fin_filrec1:    or r30, r31, r0
                 POP(r31)
