@@ -417,7 +417,7 @@ bucle_filrec:   ld.b r10, r24, r0
                 bsr FiltRec
 
                 ; Paso 6
-fin_filrec1:    addu r30, r30, 16 	; Deshacemos la pila
+fin_filrec1:    ;addu r30, r30, 16 	; Deshacemos la pila
 		or r30, r31, r0
                 POP(r31)
                 POP(r1)
