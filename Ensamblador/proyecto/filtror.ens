@@ -307,11 +307,11 @@ fin:            or r30,r31,r31
 org 0
 data 0
 org 17000
-ImagenIn: data 4,8,0xFF00FF00,0x00FF00FF,0xFF00FF00,0x00FF00FF,0xFF00FF00,0x00FF00FF,0xFF00FF00,0x00FF00FF
+ImagenIn: data 4,8,0xFF0000FF,0xFF0000FF,0xFF0000FF,0xFF0000FF,0xFF0000FF,0xFF0000FF,0xFF0000FF,0xFF0000FF
 org 17100
 ImagenOut: data 0,0,0,0,0,0,0,0,0,0
 org 17200
-FiltroRec: data 1,1,1,1,0,1,1,1,1
+FiltroRec: data 1,0,1,0,0,0,1,0,1
 
 PPAL8:  LEA(r30,0x8FF0)
         xor r2,r2,r2
@@ -343,9 +343,9 @@ FiltRec:        PUSH (r1)
                 POP(r24)
                 POP(r16)
                 PUSH(r7)
-a:              PUSH(r24)
+                PUSH(r24)
                 bsr Comp
-b:              addu r30, r30, 8
+                addu r30, r30, 8
                 cmp r5, r29, r26
                 or r26,r29,0
                 bb1 lt, r5, fin_filrec1
@@ -354,7 +354,7 @@ b:              addu r30, r30, 8
                 PUSH(r10)
                 bsr nFiltrados
                 addu r30, r30, 4; Se deshace solo el PUSH(r10)
-c:              cmp r5, r29, r0
+                cmp r5, r29, r0
                 bb1 ge, r5, continua
                 or r29,r26,0
                 br fin_filrec1
@@ -381,14 +381,15 @@ bucle_filrec:   ld.b r10, r24, r0
                 cmp r5, r4, 0
                 bb1 gt, r5, bucle_filrec
                 or r22, r30, 0; Recuperamos ptr de imgout
-d:              ld r24, r31, 12; ImagenOut
+                ld r24, r31, 12; ImagenOut
                 ld r26,r31,20
                 PUSH(r26)
                 PUSH(r16); Mfiltro
                 PUSH(r24)
                 PUSH(r22)
                 bsr FiltRec
-fin_filrec1:    or r30, r31, r0
+fin_filrec1:    addu r30,r30,16
+                or r30, r31, r0
                 POP(r31)
                 POP(r1)
                 jmp(r1)
